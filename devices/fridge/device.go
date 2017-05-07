@@ -1,10 +1,9 @@
 package device
 
 import (
-	"bytes"
 	"encoding/json"
 	"math/rand"
-	"net/http"
+	"net"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -12,46 +11,41 @@ import (
 	"github.com/vpakhuchyi/device-smart-house/models"
 )
 
+//Constants for dialup setup
+const (
+	HOST = "localhost"
+	PORT = "3030"
+	TYPE = "tcp"
+)
+
 //DataTransfer func sends reuest as JSON to the centre
-func DataTransfer(br *models.Breaker, reqChan chan models.Request) {
-	var Resp models.Response
+func DataTransfer(br *models.Breaker, reqChan chan *models.Request) {
+	var resp models.Response
 	for {
 		if br.GetTurned() == true {
 			select {
 			case r := <-reqChan:
 				go func() {
 					r.Time = time.Now().UnixNano()
-					b := new(bytes.Buffer)
 
-					err := json.NewEncoder(b).Encode(&r)
+					conn, err := net.Dial(TYPE, HOST+":"+PORT)
 					if err != nil {
-						log.Panic(err)
+						log.Errorln(err)
 					}
 
-					//Preparing a request
-					req, err := http.NewRequest("POST", "http://localhost:8080", b)
+					err = json.NewEncoder(conn).Encode(&r)
 					if err != nil {
-						log.Panic(err)
+						log.Errorln(err)
 					}
-					req.Header.Set("Content-Type", "application/json")
 
-					//Sending the request to the centre
-					client := &http.Client{}
-					resp, err := client.Do(req)
+					err = json.NewDecoder(conn).Decode(&resp)
 					if err != nil {
-						log.Panic(err)
-					}
-					defer resp.Body.Close()
-
-					//Decoding response from centre
-					err = json.NewDecoder(resp.Body).Decode(&Resp)
-					if err != nil {
-						log.Panic(err)
+						log.Errorln(err)
 					}
 
 					//info for debugging
 					log.Println("DataTransfer: [done]")
-					log.Warningln("Response: ", Resp)
+					log.Warningln("Response: ", resp)
 				}()
 
 			}
@@ -61,7 +55,7 @@ func DataTransfer(br *models.Breaker, reqChan chan models.Request) {
 
 //DataCollector func gathers data from DataGenerator
 //and sends completed request's structures to the ReqChan channel
-func DataCollector(br *models.Breaker, cBot <-chan float32, cTop <-chan float32, ReqChan chan models.Request) {
+func DataCollector(br *models.Breaker, cBot <-chan float32, cTop <-chan float32, ReqChan chan *models.Request) {
 
 	var mTop = make(map[int64]float32)
 	var mBot = make(map[int64]float32)
@@ -91,7 +85,7 @@ func DataCollector(br *models.Breaker, cBot <-chan float32, cTop <-chan float32,
 				fridgeData.TempCam2 = mBot
 				fridgeData.TempCam1 = mTop
 
-				ReqChan <- models.Request{
+				ReqChan <- &models.Request{
 					Action: "update",
 					Time:   time.Now().UnixNano(),
 					Meta: models.Metadata{
