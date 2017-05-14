@@ -40,7 +40,7 @@ func init() {
 }
 
 func main() {
-	//Listens for request from centre (it may contain config file)
+	//Listens for request from centre
 	ln, _ := net.Listen(TYPE, HOST+":"+PORT)
 	wg.Add(1)
 	go func() {
