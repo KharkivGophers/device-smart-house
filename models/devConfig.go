@@ -13,7 +13,6 @@ var config *DevConfig
 var once sync.Once
 
 func GetConfig() *DevConfig {
-
 	once.Do(func() {
 		config = &DevConfig{}
 	})
@@ -24,7 +23,6 @@ func (br *DevConfig) SetTurned(b bool) {
 	br.Mutex.Lock()
 	br.turned = b
 	br.Mutex.Unlock()
-
 }
 
 func (br *DevConfig) GetTurned() bool {
