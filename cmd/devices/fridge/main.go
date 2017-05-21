@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/vpakhuchyi/device-smart-house/devices/fridge"
@@ -32,7 +33,6 @@ var (
 	hostOut     = "localhost"
 	portOut     = "3030"
 	connTypeOut = "tcp"
-	//
 )
 
 func init() {
@@ -50,36 +50,52 @@ func init() {
 
 func main() {
 	//Listens for request from centre
-	ln, err := net.Listen(connTypeIn, hostIn+":"+portIn)
-	if err != nil {
-		log.Errorln("TCP Config")
-		log.Errorln(err)
-	}
 	wg.Add(1)
-	go func() {
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				log.Errorln(err)
-			}
-			go handleRequest(conn, config)
-		}
-	}()
+	// go runTCPServer()
 
 	//----TCP for sending requests to the center
-	conn, err := net.Dial(connTypeOut, hostOut+":"+portOut)
-	if err != nil {
-		log.Errorln("TCP Send")
-		log.Errorln(err)
-
-	}
+	conn := getDial(connTypeOut, hostOut, portOut)
 
 	go device.RunDataGenerator(config, cBot, cTop, stop, start)
 	go device.RunDataCollector(config, cBot, cTop, reqChan, stop, start)
-	//maybe without go?
 	go device.DataTransfer(config, reqChan, conn)
 	wg.Wait()
 
+}
+
+func getDial(connType string, host string, port string) net.Conn {
+	conn, err := net.Dial(connType, host+":"+port)
+	log.Println("before getDIal", err)
+	for err != nil {
+		conn, err = net.Dial(connType, host+":"+port)
+		log.Println("getDIal", err)
+		time.Sleep(time.Second)
+
+	}
+	return conn
+}
+
+func runTCPServer() {
+	var reconnect *time.Ticker
+
+	ln, err := net.Listen(connTypeIn, hostIn+":"+portIn)
+	for err != nil {
+		reconnect = time.NewTicker(time.Second * 1)
+		for range reconnect.C {
+			ln, err = net.Listen(connTypeIn, hostIn+":"+portIn)
+			log.Println("TCPServ", err)
+		}
+		reconnect.Stop()
+	}
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Errorln("ln.Accept", err)
+			continue
+		}
+		go handleRequest(conn, config)
+	}
 }
 
 func handleRequest(conn net.Conn, config *models.DevConfig) {
@@ -95,8 +111,9 @@ func handleRequest(conn net.Conn, config *models.DevConfig) {
 		log.Errorln(err)
 	}
 
-	log.Warningln(req.Turned)
-	log.Warningln(req)
+	log.Warningln("req.Turned", req.Turned)
+	log.Warningln("req", req)
+
 	if req.Turned == false {
 		stop <- struct{}{}
 	}
@@ -108,7 +125,6 @@ func handleRequest(conn net.Conn, config *models.DevConfig) {
 	config.SetTurned(req.Turned)
 	config.SetCollectFreq(req.CollectFreq)
 	config.SetSendFreq(req.SendFreq)
-	log.Warningln("hadleRequest setuped DevConfig")
 
 	resp.Descr = "New config accepted"
 	resp.Status = 200
@@ -119,6 +135,5 @@ func handleRequest(conn net.Conn, config *models.DevConfig) {
 	}
 
 	log.Println("response: ", resp)
-	log.Println("handleRequest: [done]")
 	log.Warningln("hadleRequest out")
 }
