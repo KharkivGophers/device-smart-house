@@ -8,7 +8,14 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/vpakhuchyi/device-smart-house/config"
 	"github.com/vpakhuchyi/device-smart-house/models"
+)
+
+var (
+	hostOut     = "localhost"
+	portOut     = "3030"
+	connTypeOut = "tcp"
 )
 
 //FridgeGenerData struct for data transfer
@@ -17,36 +24,45 @@ type FridgeGenerData struct {
 	Data float32
 }
 
-func send(r models.Request, conn net.Conn) {
-	log.Println("DataTransfer: Send: intro")
+func send(r models.Request, conn *net.Conn) {
 	var resp models.Response
 	r.Time = time.Now().UnixNano()
 
-	err := json.NewEncoder(conn).Encode(&r)
+	err := json.NewEncoder(*conn).Encode(&r)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln("Encode JSON", err)
 	}
 
-	err = json.NewDecoder(conn).Decode(&resp)
+	err = json.NewDecoder(*conn).Decode(&resp)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorln("Decode JSON", err)
 	}
 
-	//info for debugging
-	log.Println("DataTransfer: [done]")
 	log.Warningln("Response: ", resp)
 }
 
 //DataTransfer func sends reuest as JSON to the centre
-func DataTransfer(config *models.DevConfig, reqChan chan models.Request, conn net.Conn) {
+func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
+	conn := getDial(connTypeOut, hostOut, portOut)
 
 	for {
 		select {
 		case r := <-reqChan:
-			go send(r, conn)
-
+			send(r, conn)
 		}
 	}
+}
+
+func getDial(connType string, host string, port string) *net.Conn {
+	conn, err := net.Dial(connType, host+":"+port)
+	log.Println("before getDIal", err)
+	for err != nil {
+		conn, err = net.Dial(connType, host+":"+port)
+		log.Println("getDIal", err)
+		time.Sleep(time.Second)
+
+	}
+	return &conn
 }
 
 func constructReq(mTop map[int64]float32, mBot map[int64]float32) models.Request {
@@ -70,7 +86,7 @@ func constructReq(mTop map[int64]float32, mBot map[int64]float32) models.Request
 //DataCollector func gathers data from DataGenerator
 //and sends completed request's structures to the ReqChan channel
 func DataCollector(ticker *time.Ticker, cBot <-chan FridgeGenerData, cTop <-chan FridgeGenerData, ReqChan chan models.Request, stopInner chan struct{}) {
-	log.Warningln("collector intro")
+
 	var mTop = make(map[int64]float32)
 	var mBot = make(map[int64]float32)
 
@@ -96,13 +112,13 @@ func DataCollector(ticker *time.Ticker, cBot <-chan FridgeGenerData, cTop <-chan
 
 //DataGenerator func generates pseudo-random data that represents device's behavior
 func DataGenerator(ticker *time.Ticker, cBot chan<- FridgeGenerData, cTop chan<- FridgeGenerData, stopInner chan struct{}) {
-	log.Warningln("gener intro")
 
 	for {
 		select {
 		case <-ticker.C:
 			cTop <- FridgeGenerData{Time: makeTimestamp(), Data: rand.Float32() * 10}
 			cBot <- FridgeGenerData{Time: makeTimestamp(), Data: (rand.Float32() * 10) - 8}
+
 		case <-stopInner:
 			log.Warningln("DataGenerator - stopInner-case")
 			return
@@ -111,7 +127,7 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- FridgeGenerData, cTop chan<-
 	}
 }
 
-func RunDataCollector(config *models.DevConfig, cBot <-chan FridgeGenerData, cTop <-chan FridgeGenerData, ReqChan chan models.Request, stop <-chan struct{}, start <-chan struct{}) {
+func RunDataCollector(config *config.DevConfig, cBot <-chan FridgeGenerData, cTop <-chan FridgeGenerData, ReqChan chan models.Request, stop <-chan struct{}, start <-chan struct{}) {
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
 	ticker := time.NewTicker(time.Duration(duration) * time.Second)
@@ -139,7 +155,7 @@ func RunDataCollector(config *models.DevConfig, cBot <-chan FridgeGenerData, cTo
 	}
 }
 
-func RunDataGenerator(config *models.DevConfig, cBot chan<- FridgeGenerData, cTop chan<- FridgeGenerData, stop chan struct{}, start chan struct{}) {
+func RunDataGenerator(config *config.DevConfig, cBot chan<- FridgeGenerData, cTop chan<- FridgeGenerData, stop chan struct{}, start chan struct{}) {
 	duration := config.GetCollectFreq()
 	ticker := time.NewTicker(time.Duration(duration) * time.Second)
 	stopInner := make(chan struct{})

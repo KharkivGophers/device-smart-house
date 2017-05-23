@@ -18,7 +18,7 @@ type Metadata struct {
 	MAC  string `json:"mac"`
 }
 
-type ConfigRequest struct {
+type Config struct {
 	Turned      bool `json:"turned"`
 	CollectFreq int  `json:"collectFreq"`
 	SendFreq    int  `json:"sendFreq"`
