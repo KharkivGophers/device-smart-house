@@ -55,7 +55,6 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 
 func getDial(connType string, host string, port string) *net.Conn {
 	conn, err := net.Dial(connType, host+":"+port)
-	log.Println("before getDIal", err)
 	for err != nil {
 		conn, err = net.Dial(connType, host+":"+port)
 		log.Println("getDIal", err)

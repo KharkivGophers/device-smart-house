@@ -19,7 +19,7 @@ type Metadata struct {
 }
 
 type Config struct {
-	Turned      bool `json:"turned"`
+	State       bool `json:"state"`
 	CollectFreq int  `json:"collectFreq"`
 	SendFreq    int  `json:"sendFreq"`
 }

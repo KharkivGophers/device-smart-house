@@ -3,6 +3,7 @@ package main
 import (
 	"sync"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/vpakhuchyi/device-smart-house/config"
 	"github.com/vpakhuchyi/device-smart-house/devices/fridge"
 	"github.com/vpakhuchyi/device-smart-house/models"
@@ -30,12 +31,12 @@ func init() {
 	reqChan = make(chan models.Request)
 	stop = make(chan struct{})
 	start = make(chan struct{})
-
 	conf = config.GetConfig()
 }
 
 func main() {
-	config.ConfigInit(connTypeConf, hostConf, portConf)
+	config.Init(connTypeConf, hostConf, portConf)
+	log.Warningln("config.Init completed")
 
 	wg.Add(1)
 	go device.RunDataGenerator(conf, cBot, cTop, stop, start)

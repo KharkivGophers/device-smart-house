@@ -30,7 +30,7 @@ func GetConfig() *DevConfig {
 func (d *DevConfig) SetTurned(b bool) {
 	d.Mutex.Lock()
 	d.turned = b
-	d.Mutex.Unlock()
+	defer d.Mutex.Unlock()
 }
 
 func (d *DevConfig) GetTurned() bool {
@@ -65,16 +65,15 @@ func (d *DevConfig) SetSendFreq(b int) {
 
 }
 
-func (d *DevConfig) UpdateConfig(c models.Config) {
-	d.turned = c.Turned
+func (d *DevConfig) updateConfig(c models.Config) {
+	d.turned = c.State
 	d.sendFreq = c.SendFreq
 	d.collectFreq = c.CollectFreq
 }
 
-func AskConfig(conn *net.Conn) models.Config {
+func askConfig(conn *net.Conn) models.Config {
 	var req models.Request
 	var resp models.Config
-
 	req = models.Request{
 		Action: "config",
 		Meta: models.Metadata{
@@ -85,12 +84,12 @@ func AskConfig(conn *net.Conn) models.Config {
 
 	err := json.NewEncoder(*conn).Encode(&req)
 	if err != nil {
-		log.Errorln("Encode JSON", err)
+		log.Errorln("askConfig Encode JSON", err)
 	}
 
 	err = json.NewDecoder(*conn).Decode(&resp)
 	if err != nil {
-		log.Errorln("Decode JSON", err)
+		log.Errorln("askConfig Decode JSON", err)
 	}
 	return resp
 }
@@ -99,25 +98,27 @@ func listenConfig(conn *net.Conn) models.Config {
 	var req models.Config
 	var resp models.Response
 
-	err := json.NewDecoder(*conn).Decode(&req)
-	if err != nil {
-		log.Errorln("Decode JSON", err)
+	for {
+		err := json.NewDecoder(*conn).Decode(&req)
+		if err != nil {
+			log.Errorln("listenConfig Decode JSON", err)
+		}
+
+		resp.Status = 200
+		resp.Descr = "Config has been accepted"
+
+		err = json.NewEncoder(*conn).Encode(&resp)
+		if err != nil {
+			log.Errorln("listenConfig Encode JSON", err)
+		}
+		return req
 	}
 
-	resp.Status = 200
-	resp.Descr = "Config has been accepted"
-
-	err = json.NewEncoder(*conn).Encode(&resp)
-	if err != nil {
-		log.Errorln("Encode JSON", err)
-	}
-	return req
 }
 
-func ConfigInit(connType string, host string, port string) {
+func Init(connType string, host string, port string) {
 	config := GetConfig()
 	var reconnect *time.Ticker
-	defer reconnect.Stop()
 
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
@@ -128,12 +129,19 @@ func ConfigInit(connType string, host string, port string) {
 		}
 	}
 
-	config.UpdateConfig(AskConfig(&conn))
+	//how to close this chann?
+	//reconnect.Stop()
 
-	go func(conn *net.Conn, conf *DevConfig) {
-		for {
-			config.UpdateConfig(listenConfig(conn))
-			log.Warningln("Listens for config in loop")
-		}
-	}(&conn, config)
+	config.updateConfig(askConfig(&conn))
+	// 	log.Warningln("before listenAndChange")
+	// 	go config.updateConfig(listenConfig(&conn))
+	// 	// go listenAndChange(&conn, config)
+	// 	log.Warningln("after listenAndChange")
 }
+
+// func listenAndChange(conn *net.Conn, conf *DevConfig) {
+// 	for {
+// 		config.updateConfig(listenConfig(conn))
+// 		log.Warningln("Listens for config in loop")
+// 	}
+// }
