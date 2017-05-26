@@ -20,7 +20,7 @@ var (
 )
 
 var (
-	hostConf     = "localhost"
+	hostConf     = "192.168.104.76"
 	portConf     = "3000"
 	connTypeConf = "tcp"
 )
