@@ -16,6 +16,8 @@ func init() {
 }
 
 func main() {
+	// args := os.Args[1:]
+	// log.Println(args)
 	config.Init(connTypeConf, hostConf, portConf)
 	// go func() {
 	// 	for {
