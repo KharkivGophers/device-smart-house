@@ -7,26 +7,26 @@ import (
 )
 
 func init() {
-	cTop = make(chan models.FridgeGenerData, 10)
-	cBot = make(chan models.FridgeGenerData, 10)
+	cTop = make(chan models.FridgeGenerData, 100)
+	cBot = make(chan models.FridgeGenerData, 100)
 	reqChan = make(chan models.Request)
-	stop = make(chan struct{})
-	start = make(chan struct{})
+
+	sendFreqChan = make(chan int64)
+	collectFreqChan = make(chan int64)
+	turnedOnChan = make(chan bool)
 	conf = config.GetConfig()
 }
 
 func main() {
-	// args := os.Args[1:]
-	// log.Println(args)
-	config.Init(connTypeConf, hostConf, portConf)
+	config.Init(connTypeConf, hostConf, portConf, sendFreqChan, collectFreqChan, turnedOnChan)
 	// go func() {
 	// 	for {
 	// 		animation()
 	// 	}
 	// }()
 	wg.Add(3)
-	go device.RunDataGenerator(conf, cBot, cTop, stop, start)
-	go device.RunDataCollector(conf, cBot, cTop, reqChan, stop, start)
+	go device.RunDataGenerator(conf, cBot, cTop, collectFreqChan, turnedOnChan)
+	go device.RunDataCollector(conf, cBot, cTop, reqChan, sendFreqChan)
 	go device.DataTransfer(conf, reqChan)
 	wg.Wait()
 }
