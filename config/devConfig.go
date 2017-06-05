@@ -19,6 +19,7 @@ type DevConfig struct {
 	turned      bool
 	collectFreq int64
 	sendFreq    int64
+	subsPool    map[string]chan struct{}
 }
 
 var config *DevConfig
@@ -27,6 +28,7 @@ var once sync.Once
 func GetConfig() *DevConfig {
 	once.Do(func() {
 		config = &DevConfig{}
+		config.subsPool = make(map[string]chan struct{})
 	})
 	return config
 }
@@ -69,6 +71,20 @@ func (d *DevConfig) SetSendFreq(b int64) {
 
 }
 
+func (d *DevConfig) AddSubIntoPool(key string, value chan struct{}) {
+	d.Mutex.Lock()
+	d.subsPool[key] = value
+	d.Mutex.Unlock()
+
+}
+
+func (d *DevConfig) RemoveSubFromPool(key string) {
+	d.Mutex.Lock()
+	delete(d.subsPool, key)
+	d.Mutex.Unlock()
+
+}
+
 func (d *DevConfig) updateConfig(c models.Config) {
 	log.Warningln(c)
 	d.turned = c.TurnedOn
@@ -101,38 +117,29 @@ func askConfig(conn *net.Conn) models.Config {
 	return resp
 }
 
-func listenConfigf(devConfig *DevConfig, conn *net.Conn, sendFreqChan chan int64,
-	collectFreqChan chan int64, turnedOnChan chan bool) {
+func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 
 	for {
-		var config interface{}
+		var config models.Config
 		err := json.NewDecoder(*conn).Decode(&config)
 		checkError("receiveConfig Decode JSON", err)
 		log.Infoln(config)
-		for k, v := range config.(map[string]interface{}) {
-			log.Infoln("for range k, v:", k, v)
-			switch k {
-			case "sendFreq":
-				sendFreqChan <- int64(v.(float64))
-			case "collectFreq":
-				collectFreqChan <- int64(v.(float64))
-			case "turnedOn":
-				turnedOnChan <- v.(bool)
-			default:
-				log.Println("default case in switch: listenConfig")
 
-			}
+		devConfig.updateConfig(config)
+
+		for _, v := range devConfig.subsPool {
+			v <- struct{}{}
 		}
-		log.Println("listenConfigf: config have been received")
-
-		// resp.Descr = "Config have been received"
-		// resp.Status = 200
-		// err = json.NewEncoder(*conn).Encode(&resp)
-		// checkError("receiveConfig Encode JSON", err)
 
 	}
+
+	// resp.Descr = "Config have been received"
+	// resp.Status = 200
+	// err = json.NewEncoder(*conn).Encode(&resp)
+	// checkError("receiveConfig Encode JSON", err)
+
 }
-func Init(connType string, host string, port string, sendFreqChan chan int64, collectFreqChan chan int64, turnedOnChan chan bool) {
+func Init(connType string, host string, port string) {
 	config := GetConfig()
 	var reconnect *time.Ticker
 
@@ -146,7 +153,8 @@ func Init(connType string, host string, port string, sendFreqChan chan int64, co
 	}
 
 	config.updateConfig(askConfig(&conn))
-	go listenConfigf(config, &conn, sendFreqChan, collectFreqChan, turnedOnChan)
+	go listenConfig(config, &conn)
+
 }
 
 func checkError(desc string, err error) error {

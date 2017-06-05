@@ -77,103 +77,64 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 }
 
 func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
-	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, sendFreqChan chan int64) {
+	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request) {
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
-	ticker := time.NewTicker(time.Duration(duration) * time.Second)
-	// configChanged := make(chan struct{})
-	// configChanPool.AddChan(&configChanged, "RunDataCollector")
+	log.Warningln("RunDataCollector: duration", duration)
+	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)
+
+	configChanged := make(chan struct{})
+	config.AddSubIntoPool("DataCollector", configChanged)
 
 	go DataCollector(ticker, cBot, cTop, ReqChan, stopInner)
 
 	for {
 		select {
-		// case <-configChanged:
-		// 	ticker.Stop()
-		// 	ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Second)
-		// 	log.Println(config.GetSendFreq())
-		// 	continue
-		case c := <-sendFreqChan:
-			log.Warningln(c)
-			if c != config.GetSendFreq() {
-				stopInner <- struct{}{}
-				ticker = time.NewTicker(time.Duration(c) * time.Second)
+		case <-configChanged:
+			state := config.GetTurned()
+			switch state {
+			case true:
+				close(stopInner)
+				ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 				go DataCollector(ticker, cBot, cTop, ReqChan, stopInner)
-				config.SetSendFreq(c)
-				log.Warningln("duration:", duration)
-				log.Warningln("	go DataCollector has been started")
+				log.Warningln("go DataCollector has been started after signal")
+			case false:
+				close(stopInner)
+				log.Warningln("turnedOn: off signal")
 			}
-			// case <-stop:
-			// 	ticker.Stop()
-			// 	close(stopInner)
-			// 	log.Warningln("RunDataCollector - stop-case")
-			// case <-start:
-			// 	ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Second)
-			// 	log.Warningln("RunDataCollector - start-case")
-			// 	continue
 		}
 	}
 }
 
-func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerData, cTop chan<- models.FridgeGenerData,
-	collectFreqChan chan int64, turnedOnChan chan bool) {
+func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerData, cTop chan<- models.FridgeGenerData) {
 	duration := config.GetCollectFreq()
-	ticker := time.NewTicker(time.Duration(duration) * time.Second)
+	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)
 	stopInner := make(chan struct{})
 
-	// configChanged := make(chan struct{})
-	// configChanPool.AddChan(&configChanged, "RunDataGenerator")
+	configChanged := make(chan struct{})
+	config.AddSubIntoPool("DataGenerator", configChanged)
 
 	go DataGenerator(ticker, cBot, cTop, stopInner)
 
 	for {
 
 		select {
-		// case <-configChanged:
-		// 	ticker.Stop()
-		// 	ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Second)
-		// 	log.Println(config.GetCollectFreq())
-		// 	continue
-		// case state:= <- turnedOnChan:
-		case c := <-collectFreqChan:
-			log.Warningln(c)
-			if c != config.GetCollectFreq() {
-				stopInner <- struct{}{}
-				ticker = time.NewTicker(time.Duration(c) * time.Second)
+		case <-configChanged:
+			state := config.GetTurned()
+			switch state {
+			case true:
+				close(stopInner)
+				log.Warningln("close stopInner before new ticker")
+				ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 				go DataGenerator(ticker, cBot, cTop, stopInner)
-				config.SetCollectFreq(c)
-				log.Warningln("duration:", duration)
-				log.Warningln("	go DataGenerator has been started")
+				log.Warningln("go DataGenerator has been started after signal")
+			case false:
+				close(stopInner)
+				log.Warningln("turnedOn: off signal")
 			}
-		case s := <-turnedOnChan:
-			log.Warningln("new state", s)
-			log.Warningln("current state", config.GetTurned())
-			if s != config.GetTurned() {
-				switch s {
-				case true:
-					time.Sleep(time.Second * 2)
-					ticker = time.NewTicker(time.Duration(duration) * time.Second)
-					go DataGenerator(ticker, cBot, cTop, stopInner)
-					log.Warningln("	go DataGenerator has been started after signal")
-				case false:
-					time.Sleep(time.Second * 2)
-					stopInner <- struct{}{}
-					log.Warningln("turnedOn: off signal")
-				}
-
-			}
-			// case <-stop:
-			// 	ticker.Stop()
-			// 	close(stopInner)
-			// 	log.Warningln("RunDataGenerator - stop-case")
-			// case <-start:
-			// 	log.Warningln("1 start ")
-			// 	ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Second)
-			// 	log.Warningln("2 start ")
-			// 	log.Warningln("RunDataGenerator - start-case")
-			// 	continue
 		}
 	}
+
 }
 
 func makeTimestamp() int64 {
@@ -185,7 +146,7 @@ func getDial(connType string, host string, port string) *net.Conn {
 	conn, err := net.Dial(connType, host+":"+port)
 	checkError("getDial error", err)
 	// for err != nil {
-	// 	reconnect = time.NewTicker(time.Second * 1)
+	// 	reconnect = time.NewTicker(time.Millisecond * 1)
 	// 	for range reconnect.C {
 	// 		conn, err = net.Dial(connType, host+":"+port)
 	// 	}
