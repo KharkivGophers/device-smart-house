@@ -141,20 +141,14 @@ func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 }
 func Init(connType string, host string, port string) {
 	config := GetConfig()
-	var reconnect *time.Ticker
-
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
-		log.Errorln(err)
-		reconnect = time.NewTicker(time.Second * 1)
-		for range reconnect.C {
-			conn, _ = net.Dial(connType, host+":"+port)
-		}
+		checkError("config.Init", err)
+		time.Sleep(time.Second)
+		conn, _ = net.Dial(connType, host+":"+port)
 	}
-
 	config.updateConfig(askConfig(&conn))
 	go listenConfig(config, &conn)
-
 }
 
 func checkError(desc string, err error) error {

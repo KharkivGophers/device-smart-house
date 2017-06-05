@@ -142,16 +142,12 @@ func makeTimestamp() int64 {
 }
 
 func getDial(connType string, host string, port string) *net.Conn {
-	// var reconnect *time.Ticker
 	conn, err := net.Dial(connType, host+":"+port)
 	checkError("getDial error", err)
-	// for err != nil {
-	// 	reconnect = time.NewTicker(time.Millisecond * 1)
-	// 	for range reconnect.C {
-	// 		conn, err = net.Dial(connType, host+":"+port)
-	// 	}
-	// }
-
+	for err != nil {
+		time.Sleep(time.Second)
+		conn, err = net.Dial(connType, host+":"+port)
+	}
 	return &conn
 }
 
