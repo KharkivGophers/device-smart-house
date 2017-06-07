@@ -7,6 +7,11 @@ type Request struct {
 	Data   interface{} `json:"data"`
 }
 
+type Response struct {
+	Status int    `json:"status"`
+	Descr  string `json:"descr"`
+}
+
 type FridgeData struct {
 	TempCam1 map[int64]float32 `json:"tempCam1"`
 	TempCam2 map[int64]float32 `json:"tempCam2"`
@@ -18,8 +23,14 @@ type Metadata struct {
 	MAC  string `json:"mac"`
 }
 
-type ConfigRequest struct {
-	Turned      bool `json:"turned"`
-	CollectFreq int  `json:"collectFreq"`
-	SendFreq    int  `json:"sendFreq"`
+type Config struct {
+	TurnedOn    bool   `json:"turnedOn"`
+	CollectFreq int64  `json:"collectFreq"`
+	SendFreq    int64  `json:"sendFreq"`
+	MAC         string `json:"mac"`
+}
+
+type FridgeGenerData struct {
+	Time int64
+	Data float32
 }
