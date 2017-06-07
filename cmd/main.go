@@ -29,3 +29,7 @@ func main() {
 	go device.DataTransfer(conf, reqChan, &wg)
 	wg.Wait()
 }
+
+func catchPanic() {
+
+}

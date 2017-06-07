@@ -108,23 +108,28 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 			case true:
 
 				select {
-				case _, _ = <-stopInner:
+				case <-stopInner:
 					wg.Add(1)
 					stopInner = make(chan struct{})
-					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
+					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
 					log.Println("DataGenerator has been started after: default")
 				default:
 					close(stopInner)
 					stopInner = make(chan struct{})
 					wg.Add(1)
-					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
+					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
 					log.Println("DataGenerator has been started after: _, _ = <-stopInner:")
 				}
 			case false:
-				close(stopInner)
-				log.Println("turnedOn: off signal")
+				select {
+				case <-stopInner:
+					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
+				default:
+					close(stopInner)
+					log.Println("turnedOn: off signal")
+				}
 			}
 		}
 	}
@@ -139,6 +144,7 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 
 	configChanged := make(chan struct{})
 	config.AddSubIntoPool("DataGenerator", configChanged)
+
 	wg.Add(1)
 	if config.GetTurned() {
 		go DataGenerator(ticker, cBot, cTop, stopInner, wg)
@@ -151,23 +157,28 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 			switch state {
 			case true:
 				select {
-				case _, _ = <-stopInner:
+				case <-stopInner:
 					wg.Add(1)
 					stopInner = make(chan struct{})
-					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
+					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 					go DataGenerator(ticker, cBot, cTop, stopInner, wg)
 					log.Println("DataGenerator has been started after: default")
 				default:
 					close(stopInner)
 					stopInner = make(chan struct{})
 					wg.Add(1)
-					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
+					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 					go DataGenerator(ticker, cBot, cTop, stopInner, wg)
 					log.Println("DataGenerator has been started after: _, _ = <-stopInner:")
 				}
 			case false:
-				close(stopInner)
-				log.Println("turnedOn: off signal")
+				select {
+				case <-stopInner:
+					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
+				default:
+					close(stopInner)
+					log.Println("turnedOn: off signal")
+				}
 			}
 		}
 	}
@@ -185,7 +196,6 @@ func getDial(connType string, host string, port string) *net.Conn {
 		if times >= 5 {
 			panic("Can't connect to the server: send")
 		}
-
 		time.Sleep(time.Second)
 		conn, err = net.Dial(connType, host+":"+port)
 		checkError("getDial error", err)
