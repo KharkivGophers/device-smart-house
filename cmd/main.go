@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"runtime"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/vpakhuchyi/device-smart-house/config"
 	"github.com/vpakhuchyi/device-smart-house/device"
 	"github.com/vpakhuchyi/device-smart-house/models"
@@ -28,8 +28,10 @@ func main() {
 	go device.RunDataCollector(conf, cBot, cTop, reqChan, &wg)
 	go device.DataTransfer(conf, reqChan, &wg)
 	wg.Wait()
-}
 
-func catchPanic() {
-
+	defer func() {
+		if recover() != nil {
+			log.Warningln("Panice in main")
+		}
+	}()
 }

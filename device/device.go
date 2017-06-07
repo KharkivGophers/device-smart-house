@@ -48,7 +48,7 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 		select {
 		case <-stopInner:
 
-			log.Println("DataCollector - stopInner-case", time.Now())
+			log.Println("DataCollector(): wg.Done()", time.Now())
 			wg.Done()
 			return
 		case tv := <-cTop:
@@ -78,7 +78,7 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 
 		case <-stopInner:
 
-			log.Println("DataGenerator - stopInner-case", time.Now())
+			log.Println("DataGenerator(): wg.Done()")
 			wg.Done()
 			return
 		}
@@ -113,14 +113,14 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 					stopInner = make(chan struct{})
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
-					log.Println("DataGenerator has been started after: default")
+					log.Println("DataCollector() has been started")
 				default:
 					close(stopInner)
 					stopInner = make(chan struct{})
 					wg.Add(1)
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
-					log.Println("DataGenerator has been started after: _, _ = <-stopInner:")
+					log.Println("DataCollector() has been started")
 				}
 			case false:
 				select {
@@ -128,7 +128,7 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 				default:
 					close(stopInner)
-					log.Println("turnedOn: off signal")
+					log.Println("DataCollector() hase been killed")
 				}
 			}
 		}
@@ -162,14 +162,14 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 					stopInner = make(chan struct{})
 					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 					go DataGenerator(ticker, cBot, cTop, stopInner, wg)
-					log.Println("DataGenerator has been started after: default")
+					log.Println("DataGenerator() has been started")
 				default:
 					close(stopInner)
 					stopInner = make(chan struct{})
 					wg.Add(1)
 					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 					go DataGenerator(ticker, cBot, cTop, stopInner, wg)
-					log.Println("DataGenerator has been started after: _, _ = <-stopInner:")
+					log.Println("DataGenerator() has been started")
 				}
 			case false:
 				select {
@@ -177,7 +177,7 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)
 				default:
 					close(stopInner)
-					log.Println("turnedOn: off signal")
+					log.Println("DataGenerator() has been killed")
 				}
 			}
 		}
@@ -198,7 +198,7 @@ func getDial(connType string, host string, port string) *net.Conn {
 		}
 		time.Sleep(time.Second)
 		conn, err = net.Dial(connType, host+":"+port)
-		checkError("getDial error", err)
+		checkError("getDial()", err)
 		times++
 		log.Warningln("Recennect times: ", times)
 	}
@@ -210,18 +210,19 @@ func send(r models.Request, conn *net.Conn) {
 	r.Time = time.Now().UnixNano()
 
 	err := json.NewEncoder(*conn).Encode(&r)
-	checkError("send: JSON Enc", err)
+	checkError("send(): JSON Encode: ", err)
 
 	err = json.NewDecoder(*conn).Decode(&resp)
-	checkError("send: JSON Dec", err)
+	checkError("send(): JSON Decode: ", err)
 	i++
-	log.Infoln(i)
-	log.Warningln("Response: ", resp)
+	log.Infoln("Request number:", i)
+	log.Infoln("send(): Response from center: ", resp)
 }
 
 func constructReq(mTop map[int64]float32, mBot map[int64]float32) models.Request {
 	var fridgeData models.FridgeData
 	args := os.Args[1:]
+
 	fridgeData.TempCam2 = mBot
 	fridgeData.TempCam1 = mTop
 

@@ -86,18 +86,20 @@ func (d *DevConfig) RemoveSubFromPool(key string) {
 }
 
 func (d *DevConfig) updateConfig(c models.Config) {
-	log.Warningln(c)
 	d.turned = c.TurnedOn
-	log.Warningln("c.TurnedOn", c.TurnedOn)
+	log.Warningln("TurnedOn: ", c.TurnedOn)
 	d.sendFreq = c.SendFreq
-	log.Warningln("c.SendFreq", c.SendFreq, reflect.TypeOf(c.SendFreq))
+	log.Warningln("SendFreq: ", c.SendFreq, reflect.TypeOf(c.SendFreq))
 	d.collectFreq = c.CollectFreq
-	log.Warningln("c.CollectFreq", c.CollectFreq, reflect.TypeOf(c.CollectFreq))
-	log.Warningln("Config updated")
+	log.Warningln("CollectFreq: ", c.CollectFreq, reflect.TypeOf(c.CollectFreq))
 }
 
 func askConfig(conn *net.Conn) models.Config {
 	args := os.Args[1:]
+	log.Warningln("Type:"+"["+args[0]+"];", "Name:"+"["+args[1]+"];", "MAC:"+"["+args[2]+"]")
+	if len(args) < 3 {
+		panic("Incorrect device's information")
+	}
 
 	var req models.Request
 	var resp models.Config
@@ -108,13 +110,13 @@ func askConfig(conn *net.Conn) models.Config {
 			Name: args[1],
 			MAC:  args[2]},
 	}
-	log.Warningln(req)
 	err := json.NewEncoder(*conn).Encode(&req)
-	checkError("askConfig Encode JSON", err)
+	checkError("askConfig(): Encode JSON", err)
 
 	err = json.NewDecoder(*conn).Decode(&resp)
-	checkError("askConfig Decode JSON", err)
+	checkError("askConfig(): Decode JSON", err)
 	return resp
+
 }
 
 func listenConfig(devConfig *DevConfig, conn *net.Conn) {
@@ -123,8 +125,7 @@ func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 		var resp models.Response
 		var config models.Config
 		err := json.NewDecoder(*conn).Decode(&config)
-		checkError("receiveConfig Decode JSON", err)
-		log.Infoln(config)
+		checkError("listenConfig(): Decode JSON", err)
 
 		devConfig.updateConfig(config)
 		for _, v := range devConfig.subsPool {
@@ -134,7 +135,7 @@ func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 		resp.Descr = "Config have been received"
 		resp.Status = 200
 		err = json.NewEncoder(*conn).Encode(&resp)
-		checkError("receiveConfig Encode JSON", err)
+		checkError("listenConfig(): Encode JSON", err)
 	}
 
 }
@@ -147,7 +148,7 @@ func Init(connType string, host string, port string) {
 		if times >= 5 {
 			panic("Can't connect to the server")
 		}
-		checkError("config.Init", err)
+		checkError("Config Init():", err)
 		time.Sleep(time.Second)
 		conn, _ = net.Dial(connType, host+":"+port)
 		times++
