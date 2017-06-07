@@ -93,7 +93,7 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	log.Warningln("c.SendFreq", c.SendFreq, reflect.TypeOf(c.SendFreq))
 	d.collectFreq = c.CollectFreq
 	log.Warningln("c.CollectFreq", c.CollectFreq, reflect.TypeOf(c.CollectFreq))
-	log.Println("Config updated")
+	log.Warningln("Config updated")
 }
 
 func askConfig(conn *net.Conn) models.Config {
@@ -120,32 +120,38 @@ func askConfig(conn *net.Conn) models.Config {
 func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 
 	for {
+		var resp models.Response
 		var config models.Config
 		err := json.NewDecoder(*conn).Decode(&config)
 		checkError("receiveConfig Decode JSON", err)
 		log.Infoln(config)
 
 		devConfig.updateConfig(config)
-
 		for _, v := range devConfig.subsPool {
 			v <- struct{}{}
 		}
 
+		resp.Descr = "Config have been received"
+		resp.Status = 200
+		err = json.NewEncoder(*conn).Encode(&resp)
+		checkError("receiveConfig Encode JSON", err)
 	}
-
-	// resp.Descr = "Config have been received"
-	// resp.Status = 200
-	// err = json.NewEncoder(*conn).Encode(&resp)
-	// checkError("receiveConfig Encode JSON", err)
 
 }
 func Init(connType string, host string, port string) {
+	var times int
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
+
 	for err != nil {
+		if times >= 5 {
+			panic("Can't connect to the server")
+		}
 		checkError("config.Init", err)
 		time.Sleep(time.Second)
 		conn, _ = net.Dial(connType, host+":"+port)
+		times++
+		log.Warningln("Recennect times: ", times)
 	}
 	config.updateConfig(askConfig(&conn))
 	go listenConfig(config, &conn)

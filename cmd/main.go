@@ -1,6 +1,10 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	"runtime"
+
 	"github.com/vpakhuchyi/device-smart-house/config"
 	"github.com/vpakhuchyi/device-smart-house/device"
 	"github.com/vpakhuchyi/device-smart-house/models"
@@ -14,15 +18,14 @@ func init() {
 }
 
 func main() {
+	runtime.SetBlockProfileRate(10)
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	config.Init(connTypeConf, hostConf, portConf)
-	// go func() {
-	// 	for {
-	// 		animation()
-	// 	}
-	// }()
-	wg.Add(3)
+	wg.Add(1)
 	go device.RunDataGenerator(conf, cBot, cTop, &wg)
 	go device.RunDataCollector(conf, cBot, cTop, reqChan, &wg)
-	go device.DataTransfer(conf, reqChan)
+	go device.DataTransfer(conf, reqChan, &wg)
 	wg.Wait()
 }
