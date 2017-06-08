@@ -8,8 +8,6 @@ import (
 
 	"os"
 
-	"reflect"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/vpakhuchyi/device-smart-house/models"
 )
@@ -87,11 +85,17 @@ func (d *DevConfig) RemoveSubFromPool(key string) {
 
 func (d *DevConfig) updateConfig(c models.Config) {
 	d.turned = c.TurnedOn
-	log.Warningln("TurnedOn: ", c.TurnedOn)
 	d.sendFreq = c.SendFreq
-	log.Warningln("SendFreq: ", c.SendFreq, reflect.TypeOf(c.SendFreq))
+	log.Warningln("SendFreq: ", d.sendFreq)
 	d.collectFreq = c.CollectFreq
-	log.Warningln("CollectFreq: ", c.CollectFreq, reflect.TypeOf(c.CollectFreq))
+	log.Warningln("CollectFreq: ", d.collectFreq)
+
+	switch d.turned {
+	case false:
+		log.Warningln("ON PAUSE")
+	case true:
+		log.Warningln("WORKING")
+	}
 }
 
 func askConfig(conn *net.Conn) models.Config {

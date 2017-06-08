@@ -48,7 +48,7 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 		select {
 		case <-stopInner:
 
-			log.Println("DataCollector(): wg.Done()", time.Now())
+			log.Println("DataCollector(): wg.Done()")
 			wg.Done()
 			return
 		case tv := <-cTop:
@@ -86,6 +86,7 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 	}
 }
 
+//RunDataCollector setups DataCollector
 func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
 	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, wg *sync.WaitGroup) {
 	duration := config.GetSendFreq()
@@ -106,7 +107,6 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 			state := config.GetTurned()
 			switch state {
 			case true:
-
 				select {
 				case <-stopInner:
 					wg.Add(1)
@@ -136,6 +136,7 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 
 }
 
+//RunDataGenerator setups DataGenerator
 func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerData,
 	cTop chan<- models.FridgeGenerData, wg *sync.WaitGroup) {
 	duration := config.GetCollectFreq()
