@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/vpakhuchyi/device-smart-house/config"
-	"github.com/vpakhuchyi/device-smart-house/device"
-	"github.com/vpakhuchyi/device-smart-house/models"
+	"github.com/device-smart-house/config"
+	"github.com/device-smart-house/device"
+	"github.com/device-smart-house/models"
 )
 
 func init() {

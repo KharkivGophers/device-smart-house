@@ -3,8 +3,8 @@ package main
 import (
 	"sync"
 
-	"github.com/vpakhuchyi/device-smart-house/config"
-	"github.com/vpakhuchyi/device-smart-house/models"
+	"github.com/device-smart-house/config"
+	"github.com/device-smart-house/models"
 )
 
 var (
