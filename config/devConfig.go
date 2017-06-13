@@ -98,7 +98,7 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	}
 }
 
-func askConfig(conn *net.Conn) models.Config {
+func askConfig(conn net.Conn) models.Config {
 	args := os.Args[1:]
 	log.Warningln("Type:"+"["+args[0]+"];", "Name:"+"["+args[1]+"];", "MAC:"+"["+args[2]+"]")
 	if len(args) < 3 {
@@ -114,21 +114,21 @@ func askConfig(conn *net.Conn) models.Config {
 			Name: args[1],
 			MAC:  args[2]},
 	}
-	err := json.NewEncoder(*conn).Encode(&req)
+	err := json.NewEncoder(conn).Encode(req)
 	checkError("askConfig(): Encode JSON", err)
 
-	err = json.NewDecoder(*conn).Decode(&resp)
+	err = json.NewDecoder(conn).Decode(&resp)
 	checkError("askConfig(): Decode JSON", err)
 	return resp
 
 }
 
-func listenConfig(devConfig *DevConfig, conn *net.Conn) {
+func listenConfig(devConfig *DevConfig, conn net.Conn) {
 
 	for {
 		var resp models.Response
 		var config models.Config
-		err := json.NewDecoder(*conn).Decode(&config)
+		err := json.NewDecoder(conn).Decode(&config)
 		checkError("listenConfig(): Decode JSON", err)
 
 		devConfig.updateConfig(config)
@@ -138,7 +138,7 @@ func listenConfig(devConfig *DevConfig, conn *net.Conn) {
 
 		resp.Descr = "Config have been received"
 		resp.Status = 200
-		err = json.NewEncoder(*conn).Encode(&resp)
+		err = json.NewEncoder(conn).Encode(&resp)
 		checkError("listenConfig(): Encode JSON", err)
 	}
 
@@ -158,8 +158,8 @@ func Init(connType string, host string, port string) {
 		times++
 		log.Warningln("Recennect times: ", times)
 	}
-	config.updateConfig(askConfig(&conn))
-	go listenConfig(config, &conn)
+	config.updateConfig(askConfig(conn))
+	go listenConfig(config, conn)
 }
 
 func checkError(desc string, err error) error {

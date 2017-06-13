@@ -189,7 +189,7 @@ func makeTimestamp() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func getDial(connType string, host string, port string) *net.Conn {
+func getDial(connType string, host string, port string) net.Conn {
 	var times int
 	conn, err := net.Dial(connType, host+":"+port)
 
@@ -203,17 +203,17 @@ func getDial(connType string, host string, port string) *net.Conn {
 		times++
 		log.Warningln("Recennect times: ", times)
 	}
-	return &conn
+	return conn
 }
 
-func send(r models.Request, conn *net.Conn) {
+func send(r models.Request, conn net.Conn) {
 	var resp models.Response
 	r.Time = time.Now().UnixNano()
 
-	err := json.NewEncoder(*conn).Encode(&r)
+	err := json.NewEncoder(conn).Encode(r)
 	checkError("send(): JSON Encode: ", err)
 
-	err = json.NewDecoder(*conn).Decode(&resp)
+	err = json.NewDecoder(conn).Decode(&resp)
 	checkError("send(): JSON Decode: ", err)
 	i++
 	log.Infoln("Request number:", i)

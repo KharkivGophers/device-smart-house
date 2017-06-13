@@ -1,41 +1,36 @@
 package device
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+
+	"github.com/device-smart-house/models"
+	. "github.com/smartystreets/goconvey/convey"
+)
 
 var (
 	mTop = make(map[int64]float32)
 	mBot = make(map[int64]float32)
 )
 
-func TestConstructReqAction(t *testing.T) {
-	req := constructReq(mTop, mBot)
-	if req.Action == "" {
-		t.Error("Req is absent", req.Action)
-	}
-}
-func TestConstructReqMetaMAC(t *testing.T) {
-	req := constructReq(mTop, mBot)
-	if req.Meta.MAC == "" {
-		t.Error("MAC is absent", req.Meta.MAC)
-	}
-}
-func TestConstructReqMetaType(t *testing.T) {
-	req := constructReq(mTop, mBot)
-	if req.Meta.Type == "" {
-		t.Error("Type is absent", req.Meta.Type)
-	}
+func TestGetDial(t *testing.T) {
+	Convey("TCP connection should be estabilished", t, func() {
+		conn := getDial(connTypeOut, hostOut, portOut)
+		So(conn, ShouldNotBeNil)
+	})
 }
 
-func TestConstructReqMetaName(t *testing.T) {
-	req := constructReq(mTop, mBot)
-	if req.Meta.Name == "" {
-		t.Error("Name is absent", req.Meta.Name)
-	}
-}
+func TestJSONTrensfer(t *testing.T) {
+	var response models.Response
 
-func TestConstructReqData(t *testing.T) {
-	req := constructReq(mTop, mBot)
-	if req.Data == nil {
-		t.Error("Nil data", req.Data)
-	}
+	res := models.Response{Status: 200, Descr: "Data has been delivered successfully"}
+	req := models.Request{Action: "update", Time: 1496741392463499334, Meta: models.Metadata{Type: "fridge", Name: "LG", MAC: "00-00-00-00-00-00"}}
+	Convey("JSON response should be the same", t, func() {
+		conn := getDial(connTypeOut, hostOut, portOut)
+		json.NewEncoder(*conn).Encode(req)
+
+		json.NewDecoder(*conn).Decode(&response)
+
+		So(response.Descr, ShouldEqual, res.Descr)
+	})
 }
