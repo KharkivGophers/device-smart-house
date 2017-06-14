@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-	"time"
 
 	"os"
 
@@ -124,42 +123,50 @@ func askConfig(conn net.Conn) models.Config {
 }
 
 func listenConfig(devConfig *DevConfig, conn net.Conn) {
+	var resp models.Response
+	var config models.Config
+	err := json.NewDecoder(conn).Decode(&config)
+	checkError("listenConfig(): Decode JSON", err)
 
-	for {
-		var resp models.Response
-		var config models.Config
-		err := json.NewDecoder(conn).Decode(&config)
-		checkError("listenConfig(): Decode JSON", err)
+	devConfig.updateConfig(config)
+	publishConfig(devConfig)
 
-		devConfig.updateConfig(config)
-		for _, v := range devConfig.subsPool {
-			v <- struct{}{}
-		}
-
-		resp.Descr = "Config have been received"
-		resp.Status = 200
-		err = json.NewEncoder(conn).Encode(&resp)
-		checkError("listenConfig(): Encode JSON", err)
-	}
-
+	resp.Descr = "Config have been received"
+	resp.Status = 200
+	err = json.NewEncoder(conn).Encode(&resp)
+	checkError("listenConfig(): Encode JSON", err)
 }
+
+func publishConfig(d *DevConfig) {
+	for _, v := range d.subsPool {
+		v <- struct{}{}
+	}
+}
+
 func Init(connType string, host string, port string) {
-	var times int
+	// var times int
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
-
 	for err != nil {
-		if times >= 5 {
-			panic("Can't connect to the server")
-		}
-		checkError("Config Init():", err)
-		time.Sleep(time.Second)
-		conn, _ = net.Dial(connType, host+":"+port)
-		times++
-		log.Warningln("Recennect times: ", times)
+		panic("Can't connect to the server")
 	}
+	// for err != nil {
+	// 	if times >= 5 {
+	// 		panic("Can't connect to the server")
+	// 	}
+	// 	checkError("Config Init():", err)
+	// 	time.Sleep(time.Second)
+	// 	conn, _ = net.Dial(connType, host+":"+port)
+	// 	times++
+	// 	log.Warningln("Recennect times: ", times)
+	// }
 	config.updateConfig(askConfig(conn))
-	go listenConfig(config, conn)
+	go func() {
+		for {
+			listenConfig(config, conn)
+		}
+	}()
+
 }
 
 func checkError(desc string, err error) error {
