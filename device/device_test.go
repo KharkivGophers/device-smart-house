@@ -1,6 +1,7 @@
 package device
 
 import (
+	"errors"
 	"net"
 	"os"
 	"testing"
@@ -26,6 +27,15 @@ func TestGetDial(t *testing.T) {
 	Convey("TCP connection should be estabilished", t, func() {
 		conn := getDial(connTypeConf, hostConf, portConf)
 		So(conn, ShouldNotBeNil)
+	})
+}
+
+func TestCheckError(t *testing.T) {
+
+	Convey("CheckError should return error's value", t, func() {
+		exErr := errors.New("Produce error")
+		err := checkError("Error message", exErr)
+		So(err.Error(), ShouldEqual, exErr.Error())
 	})
 }
 

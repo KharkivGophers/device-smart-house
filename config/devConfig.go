@@ -150,16 +150,7 @@ func Init(connType string, host string, port string) {
 	for err != nil {
 		panic("Can't connect to the server")
 	}
-	// for err != nil {
-	// 	if times >= 5 {
-	// 		panic("Can't connect to the server")
-	// 	}
-	// 	checkError("Config Init():", err)
-	// 	time.Sleep(time.Second)
-	// 	conn, _ = net.Dial(connType, host+":"+port)
-	// 	times++
-	// 	log.Warningln("Recennect times: ", times)
-	// }
+
 	config.updateConfig(askConfig(conn))
 	go func() {
 		for {

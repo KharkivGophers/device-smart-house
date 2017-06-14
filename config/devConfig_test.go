@@ -190,47 +190,6 @@ func TestListenConfig(t *testing.T) {
 	})
 }
 
-// func TestPublishConfig(t *testing.T) {
-// 	firstSubChan := make(chan struct{})
-// 	secondSubChan := make(chan struct{})
-
-// 	cfg := models.Config{
-// 		TurnedOn:    true,
-// 		CollectFreq: 1000,
-// 		SendFreq:    5000}
-
-// 	Convey("PublishConfigfig should notificate all subs", t, func() {
-
-// 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
-
-// 		go func() {
-// 			for {
-// 				conn, err := ln.Accept()
-// 				fmt.Println(err)
-// 				json.NewEncoder(conn).Encode(cfg)
-// 				defer conn.Close()
-// 				defer ln.Close()
-// 			}
-// 		}()
-
-// 		devConfig := GetConfig()
-// 		connD, _ := net.Dial(connTypeConf, hostConf+":"+portConf)
-
-// 		devConfig.AddSubIntoPool("firstSub", firstSubChan)
-// 		devConfig.AddSubIntoPool("secondSub", secondSubChan)
-
-// 		go listenConfig(devConfig, connD)
-
-// 		json.NewEncoder(connD).Encode(cfg)
-// 		_, a := <-firstSubChan
-// 		_, b := <-secondSubChan
-
-// 		connD.Close()
-// 		defer ln.Close()
-// 		So(a, ShouldEqual, true)
-// 		So(b, ShouldEqual, true)
-// 	})
-// }
 func TestPublishConfig(t *testing.T) {
 	firstSubChan := make(chan struct{})
 	secondSubChan := make(chan struct{})
