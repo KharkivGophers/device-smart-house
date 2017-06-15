@@ -15,7 +15,7 @@ var (
 	conf    *config.DevConfig
 
 	//for config's listenner
-	hostConf     = "192.168.104.76"
+	hostConf     = "localhost"
 	portConf     = "3000"
 	connTypeConf = "tcp"
 )

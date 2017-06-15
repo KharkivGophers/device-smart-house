@@ -1,10 +1,10 @@
 package models
 
 type Request struct {
-	Action string      `json:"action"`
-	Time   int64       `json:"time"`
-	Meta   Metadata    `json:"meta"`
-	Data   interface{} `json:"data"`
+	Action string     `json:"action"`
+	Time   int64      `json:"time"`
+	Meta   Metadata   `json:"meta"`
+	Data   FridgeData `json:"data"`
 }
 
 type Response struct {

@@ -18,7 +18,7 @@ var i int
 
 //for data transfer
 var (
-	hostOut     = "192.168.104.76"
+	hostOut     = "localhost"
 	portOut     = "3030"
 	connTypeOut = "tcp"
 )

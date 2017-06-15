@@ -17,16 +17,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var (
-	connTypeConf = "tcp"
-	hostConf     = "localhost"
-	portConf     = "3000"
-)
-
-func init() {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
-}
-
 func TestSetTurned(t *testing.T) {
 	Convey("Should set valid value", t, func() {
 		cfg := GetConfig()
@@ -105,6 +95,8 @@ func TestRemoveSubFromPool(t *testing.T) {
 }
 
 func TestUpdateConfig(t *testing.T) {
+	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
+
 	exCfg := models.Config{
 		TurnedOn:    true,
 		SendFreq:    100,
@@ -129,10 +121,15 @@ func TestCheckError(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
+	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
 	devCfg := models.Config{
 		TurnedOn:    true,
 		CollectFreq: 1000,
 		SendFreq:    5000}
+
+	connTypeConf := "tcp"
+	hostConf := "localhost"
+	portConf := "3000"
 
 	Convey("Init should receive config", t, func() {
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
@@ -152,12 +149,14 @@ func TestInit(t *testing.T) {
 }
 
 func TestListenConfig(t *testing.T) {
-
+	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
 	firstSubChan := make(chan struct{})
 	secondSubChan := make(chan struct{})
 	server, client := net.Pipe()
+
 	defer client.Close()
 	defer server.Close()
+
 	cfg := models.Config{
 		TurnedOn:    true,
 		CollectFreq: 1000,
@@ -191,9 +190,11 @@ func TestListenConfig(t *testing.T) {
 }
 
 func TestPublishConfig(t *testing.T) {
+	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
 	firstSubChan := make(chan struct{})
 	secondSubChan := make(chan struct{})
 	server, client := net.Pipe()
+
 	cfg := models.Config{
 		TurnedOn:    true,
 		CollectFreq: 1000,
