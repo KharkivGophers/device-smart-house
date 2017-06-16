@@ -8,8 +8,7 @@ type Request struct {
 }
 
 type Response struct {
-	Status int    `json:"status"`
-	Descr  string `json:"descr"`
+	Descr string `json:"descr"`
 }
 
 type FridgeData struct {
@@ -28,6 +27,13 @@ type Config struct {
 	CollectFreq int64  `json:"collectFreq"`
 	SendFreq    int64  `json:"sendFreq"`
 	MAC         string `json:"mac"`
+}
+
+func (c Config) IsEmpty() bool {
+	if c.CollectFreq == 0 && c.SendFreq == 0 && c.MAC == "" && c.TurnedOn == false {
+		return true
+	}
+	return false
 }
 
 type FridgeGenerData struct {
