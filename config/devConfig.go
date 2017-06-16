@@ -118,6 +118,11 @@ func askConfig(conn net.Conn) models.Config {
 
 	err = json.NewDecoder(conn).Decode(&resp)
 	checkError("askConfig(): Decode JSON", err)
+
+	if err != nil && resp.IsEmpty() {
+		panic("Connection has been closed by center")
+	}
+
 	return resp
 
 }
@@ -125,16 +130,18 @@ func askConfig(conn net.Conn) models.Config {
 func listenConfig(devConfig *DevConfig, conn net.Conn) {
 	var resp models.Response
 	var config models.Config
+
 	err := json.NewDecoder(conn).Decode(&config)
 	checkError("listenConfig(): Decode JSON", err)
 
-	devConfig.updateConfig(config)
-	publishConfig(devConfig)
-
 	resp.Descr = "Config have been received"
 	resp.Status = 200
+
 	err = json.NewEncoder(conn).Encode(&resp)
 	checkError("listenConfig(): Encode JSON", err)
+
+	devConfig.updateConfig(config)
+	publishConfig(devConfig)
 }
 
 func publishConfig(d *DevConfig) {

@@ -154,9 +154,6 @@ func TestListenConfig(t *testing.T) {
 	secondSubChan := make(chan struct{})
 	server, client := net.Pipe()
 
-	defer client.Close()
-	defer server.Close()
-
 	cfg := models.Config{
 		TurnedOn:    true,
 		CollectFreq: 1000,
@@ -164,17 +161,13 @@ func TestListenConfig(t *testing.T) {
 
 	Convey("PublishConfigfig should notificate all subs", t, func() {
 
-		go func() {
-			json.NewEncoder(server).Encode(cfg)
-		}()
-
 		devConfig := GetConfig()
 
 		devConfig.AddSubIntoPool("firstSub", firstSubChan)
 		devConfig.AddSubIntoPool("secondSub", secondSubChan)
 
 		go func() {
-			json.NewEncoder(client).Encode(cfg)
+			json.NewEncoder(server).Encode(cfg)
 		}()
 		go listenConfig(devConfig, client)
 		_, a := <-firstSubChan
@@ -186,6 +179,8 @@ func TestListenConfig(t *testing.T) {
 		So(devConfig.GetCollectFreq(), ShouldEqual, 1000)
 		So(devConfig.GetTurned(), ShouldEqual, true)
 
+		client.Close()
+		server.Close()
 	})
 }
 
@@ -195,29 +190,30 @@ func TestPublishConfig(t *testing.T) {
 	secondSubChan := make(chan struct{})
 	server, client := net.Pipe()
 
+	defer client.Close()
+	defer server.Close()
 	cfg := models.Config{
 		TurnedOn:    true,
 		CollectFreq: 1000,
 		SendFreq:    5000}
 
-	defer client.Close()
-	defer server.Close()
 	Convey("PublishConfigfig should notificate all subs", t, func() {
+
 		go func() {
 			json.NewEncoder(server).Encode(cfg)
 
 		}()
-		defer server.Close()
+
 		devConfig := GetConfig()
 
 		devConfig.AddSubIntoPool("firstSub", firstSubChan)
 		devConfig.AddSubIntoPool("secondSub", secondSubChan)
 
-		go listenConfig(devConfig, client)
 		go func() {
 			json.NewEncoder(client).Encode(cfg)
 
 		}()
+		go listenConfig(devConfig, client)
 
 		_, a := <-firstSubChan
 		_, b := <-secondSubChan
