@@ -18,7 +18,7 @@ func main() {
 	wg.Add(1)
 	go device.RunDataGenerator(conf, cBot, cTop, &wg)
 	go device.RunDataCollector(conf, cBot, cTop, reqChan, &wg)
-	go device.DataTransfer(conf, reqChan, &wg)
+	go device.DataTransfer(conf, reqChan)
 	wg.Wait()
 
 }

@@ -135,13 +135,13 @@ func listenConfig(devConfig *DevConfig, conn net.Conn) {
 	checkError("listenConfig(): Decode JSON", err)
 
 	resp.Descr = "Config have been received"
-	resp.Status = 200
+
+	devConfig.updateConfig(config)
+	go publishConfig(devConfig)
 
 	err = json.NewEncoder(conn).Encode(&resp)
 	checkError("listenConfig(): Encode JSON", err)
 
-	devConfig.updateConfig(config)
-	publishConfig(devConfig)
 }
 
 func publishConfig(d *DevConfig) {

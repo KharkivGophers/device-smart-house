@@ -18,20 +18,19 @@ var i int
 
 //for data transfer
 var (
-	hostOut     = "192.168.104.76"
+	hostOut     = "localhost"
 	portOut     = "3030"
 	connTypeOut = "tcp"
 )
 
 //DataTransfer func sends reuest as JSON to the centre
-func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *sync.WaitGroup) {
+func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 	conn := getDial(connTypeOut, hostOut, portOut)
 
 	for {
 		select {
 		case r := <-reqChan:
 			go send(r, conn)
-
 		}
 	}
 }

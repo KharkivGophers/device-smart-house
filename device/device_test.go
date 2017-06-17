@@ -14,8 +14,6 @@ import (
 
 	"time"
 
-	"fmt"
-
 	"github.com/device-smart-house/config"
 	"github.com/device-smart-house/models"
 	. "github.com/smartystreets/goconvey/convey"
@@ -94,7 +92,7 @@ func TestSend(t *testing.T) {
 			MAC:  os.Args[3]},
 	}
 
-	resp = models.Response{Status: 200, Descr: "Struct has been received"}
+	resp = models.Response{Descr: "Struct has been received"}
 	Convey("Send should send JSON to the server", t, func() {
 		go send(exReq, client)
 
@@ -119,7 +117,7 @@ func TestMakeTimeStamp(t *testing.T) {
 
 //how to change conn configs?
 func TestDataTransfer(t *testing.T) {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
+	maskOsArgs()
 	connTypeOut := "tcp"
 	hostOut := "localhost"
 	portOut := "3030"
@@ -146,28 +144,31 @@ func TestDataTransfer(t *testing.T) {
 			TempCam1: top,
 			TempCam2: bot},
 	}
-	var wg sync.WaitGroup
 	cfg := config.GetConfig()
 	ch := make(chan models.Request)
 
 	Convey("DataTransfer should receive req from chan and transfer it to the server", t, func() {
-		ln, _ := net.Listen(connTypeOut, hostOut+":"+portOut)
-		defer ln.Close()
+		ln, err := net.Listen(connTypeOut, hostOut+":"+portOut)
+		if err != nil {
+			t.Fail()
+		}
 
-		wg.Add(1)
 		go func() {
-			conn, _ := ln.Accept()
-			err := json.NewDecoder(conn).Decode(&req)
-			checkError("decode", err)
-			wg.Done()
+			defer ln.Close()
+			server, err := ln.Accept()
+			if err != nil {
+				t.Fail()
+			}
+			err = json.NewDecoder(server).Decode(&req)
+			if err != nil {
+				t.Fail()
+			}
 		}()
-
-		go DataTransfer(cfg, ch, &wg)
+		go DataTransfer(cfg, ch)
 
 		ch <- exReq
-
-		wg.Wait()
-
+		//need to refactor DataTransfer (can't wait for it)
+		time.Sleep(time.Millisecond * 10)
 		b := reflect.DeepEqual(req.Data, exReq.Data)
 		So(req.Action, ShouldEqual, exReq.Action)
 		//Compare struct
@@ -175,6 +176,7 @@ func TestDataTransfer(t *testing.T) {
 		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
 		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
 		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
+
 	})
 }
 
@@ -196,8 +198,6 @@ func TestDataGenerator(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 10)
 
-		fmt.Println(fromBot)
-		fmt.Println(fromTop)
 		So(okTop, ShouldEqual, true)
 		So(okBot, ShouldEqual, true)
 		So(fromBot.Data, ShouldNotEqual, 0)
@@ -205,4 +205,53 @@ func TestDataGenerator(t *testing.T) {
 		So(reflect.TypeOf(fromBot.Data).String(), ShouldEqual, "float32")
 		So(reflect.TypeOf(fromTop.Data).String(), ShouldEqual, "float32")
 	})
+}
+func TestDataCollector(t *testing.T) {
+	maskOsArgs()
+	var wg sync.WaitGroup
+	var req models.Request
+	ticker := time.NewTicker(time.Millisecond)
+	top := make(chan models.FridgeGenerData)
+	bot := make(chan models.FridgeGenerData)
+	reqChan := make(chan models.Request)
+	stopInner := make(chan struct{})
+
+	botMap := make(map[int64]float32)
+	topMap := make(map[int64]float32)
+
+	topMap[0] = 1.01
+
+	botMap[0] = 10.01
+
+	exReq := models.Request{
+		Action: "update",
+		Meta: models.Metadata{
+			Type: os.Args[1],
+			Name: os.Args[2],
+			MAC:  os.Args[3]},
+		Data: models.FridgeData{
+			TempCam1: topMap,
+			TempCam2: botMap},
+	}
+
+	Convey("DataGenerator should produce structs with data", t, func() {
+
+		go DataCollector(ticker, bot, top, reqChan, stopInner, &wg)
+		top <- models.FridgeGenerData{Data: 1.01}
+		bot <- models.FridgeGenerData{Data: 10.01}
+
+		time.Sleep(time.Millisecond * 10)
+
+		req = <-reqChan
+
+		//we have to refactor DataCllector: need to control WG
+		// close(stopInner)
+		//Compare struct's data
+		b := reflect.DeepEqual(req.Data, exReq.Data)
+		So(b, ShouldEqual, true)
+	})
+}
+
+func maskOsArgs() {
+	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
 }
