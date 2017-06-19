@@ -10,8 +10,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/device-smart-house/config"
-	"github.com/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/config"
+	"github.com/KharkivGophers/device-smart-house/models"
 )
 
 var i int

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/models"
 
 	"errors"
 

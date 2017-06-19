@@ -14,8 +14,8 @@ import (
 
 	"time"
 
-	"github.com/device-smart-house/config"
-	"github.com/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/config"
+	"github.com/KharkivGophers/device-smart-house/models"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

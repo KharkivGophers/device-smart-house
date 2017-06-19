@@ -8,7 +8,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/models"
 )
 
 type DevConfig struct {
