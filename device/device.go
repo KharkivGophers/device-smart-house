@@ -9,7 +9,6 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 )
@@ -18,10 +17,18 @@ var i int
 
 //for data transfer
 var (
-	hostOut     = "0.0.0.0"
+	hostOut     = GetEnvCenter("CENTER_PORT_3030_TCP_ADDR")
 	portOut     = "3030"
 	connTypeOut = "tcp"
 )
+
+func GetEnvCenter(key string) string {
+	host := os.Getenv(key)
+	if len(host) == 0 {
+		return "127.0.0.1"
+	}
+	return host
+}
 
 //DataTransfer func sends reuest as JSON to the centre
 func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {

@@ -3,6 +3,7 @@ package main
 import (
 	"sync"
 
+	"github.com/KharkivGophers/device-smart-house/device"
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 )
@@ -14,8 +15,8 @@ var (
 	wg      sync.WaitGroup
 	conf    *config.DevConfig
 
-	//for config's listenner
-	hostConf     = "0.0.0.0"
+	//for config's listener
+	hostConf     = device.GetEnvCenter("CENTER_PORT_3000_TCP_ADDR")
 	portConf     = "3000"
 	connTypeConf = "tcp"
 )
