@@ -155,7 +155,7 @@ func Init(connType string, host string, port string) {
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
-		panic("Can't connect to the server")
+		panic("Can't connect to the server: " + host+":"+port)
 	}
 
 	config.updateConfig(askConfig(conn))

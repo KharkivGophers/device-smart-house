@@ -3,9 +3,9 @@ package main
 import (
 	"sync"
 
-	"github.com/KharkivGophers/device-smart-house/device"
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/device"
 )
 
 var (
