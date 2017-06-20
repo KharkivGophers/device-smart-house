@@ -17,7 +17,7 @@ var i int
 
 //for data transfer
 var (
-	hostOut     = GetEnvCenter("CENTER_PORT_3030_TCP_ADDR")
+	hostOut     = GetEnvCenter("CENTER_TCP_ADDR")
 	portOut     = "3030"
 	connTypeOut = "tcp"
 )

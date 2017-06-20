@@ -16,7 +16,7 @@ var (
 	conf    *config.DevConfig
 
 	//for config's listener
-	hostConf     = device.GetEnvCenter("CENTER_PORT_3000_TCP_ADDR")
+	hostConf     = device.GetEnvCenter("CENTER_TCP_ADDR")
 	portConf     = "3000"
 	connTypeConf = "tcp"
 )
