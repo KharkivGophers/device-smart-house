@@ -5,5 +5,5 @@ COPY . /go/src/github.com/KharkivGophers/device-smart-house
 WORKDIR /go/src/github.com/KharkivGophers/device-smart-house/cmd
 
 RUN go get ./
-RUN go build
+RUN go build -o device-smart-house
 CMD device-smart-house
