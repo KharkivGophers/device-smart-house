@@ -6,4 +6,5 @@ WORKDIR /go/src/github.com/KharkivGophers/device-smart-house/cmd
 
 RUN go get ./
 RUN go build -o device-smart-house
+CMD "ls -a"
 CMD device-smart-house
