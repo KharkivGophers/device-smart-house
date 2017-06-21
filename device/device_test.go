@@ -21,13 +21,15 @@ import (
 
 func TestGetDial(t *testing.T) {
 	connTypeConf := "tcp"
-	hostConf := "localhost"
+	hostConf := "0.0.0.0"
 	portConf := "3000"
 
 	Convey("TCP connection should be estabilished", t, func() {
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
-		defer ln.Close()
+
 		conn := getDial(connTypeConf, hostConf, portConf)
+		time.Sleep(time.Millisecond * 100)
+		defer ln.Close()
 		defer conn.Close()
 		So(conn, ShouldNotBeNil)
 	})

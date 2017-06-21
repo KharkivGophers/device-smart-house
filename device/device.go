@@ -8,16 +8,17 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
+	log "github.com/sirupsen/logrus"
 )
 
 var i int
 
 //for data transfer
 var (
-	hostOut     = GetEnvCenter("CENTER_PORT_3030_TCP_ADDR")
+	//hostOut     = GetEnvCenter("CENTER_PORT_3030_TCP_ADDR")
+	hostOut     = "0.0.0.0"
 	portOut     = "3030"
 	connTypeOut = "tcp"
 )
@@ -172,6 +173,7 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 					log.Println("DataGenerator() has been started")
 				default:
 					close(stopInner)
+					ticker.Stop()
 					stopInner = make(chan struct{})
 					wg.Add(1)
 					ticker = time.NewTicker(time.Duration(config.GetCollectFreq()) * time.Millisecond)

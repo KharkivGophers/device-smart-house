@@ -7,8 +7,8 @@ import (
 
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/KharkivGophers/device-smart-house/models"
+	log "github.com/sirupsen/logrus"
 )
 
 type DevConfig struct {
@@ -155,7 +155,7 @@ func Init(connType string, host string, port string) {
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
-		panic("Can't connect to the server: " + host+":"+port)
+		panic("Can't connect to the server: " + host + ":" + port)
 	}
 
 	config.updateConfig(askConfig(conn))
