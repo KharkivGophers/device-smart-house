@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-
 	"os"
-
 	"github.com/KharkivGophers/device-smart-house/models"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
 type DevConfig struct {

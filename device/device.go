@@ -10,18 +10,10 @@ import (
 
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 )
 
-var i int
-
-//for data transfer
-var (
-	//hostOut     = GetEnvCenter("CENTER_PORT_3030_TCP_ADDR")
-	hostOut     = "0.0.0.0"
-	portOut     = "3030"
-	connTypeOut = "tcp"
-)
+var requestsCounter int
 
 func GetEnvCenter(key string) string {
 	host := os.Getenv(key)
@@ -31,9 +23,19 @@ func GetEnvCenter(key string) string {
 	return host
 }
 
-//DataTransfer func sends reuest as JSON to the centre
+//DataTransfer func sends request as JSON to the centre
 func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
-	conn := getDial(connTypeOut, hostOut, portOut)
+
+	// for data transfer
+	transferConnParams := models.TransferConnParams{
+		// HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),
+		HostOut: "0.0.0.0",
+		PortOut: "3030",
+		ConnTypeOut: "tcp",
+	}
+
+
+	conn := getDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
 
 	for {
 		select {
@@ -135,7 +137,7 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 				default:
 					close(stopInner)
-					log.Println("DataCollector() hase been killed")
+					log.Println("DataCollector() has been killed")
 				}
 			}
 		}
@@ -209,7 +211,7 @@ func getDial(connType string, host string, port string) net.Conn {
 		conn, err = net.Dial(connType, host+":"+port)
 		checkError("getDial()", err)
 		times++
-		log.Warningln("Recennect times: ", times)
+		log.Warningln("Reconnect times: ", times)
 	}
 	return conn
 }
@@ -223,8 +225,8 @@ func send(r models.Request, conn net.Conn) {
 
 	err = json.NewDecoder(conn).Decode(&resp)
 	checkError("send(): JSON Decode: ", err)
-	i++
-	log.Infoln("Request number:", i)
+	requestsCounter++
+	log.Infoln("Request number:", requestsCounter)
 	log.Infoln("send(): Response from center: ", resp)
 }
 

@@ -1,5 +1,9 @@
 package models
 
+import (
+	"sync"
+)
+
 type Request struct {
 	Action string     `json:"action"`
 	Time   int64      `json:"time"`
@@ -39,4 +43,24 @@ func (c Config) IsEmpty() bool {
 type FridgeGenerData struct {
 	Time int64
 	Data float32
+}
+
+type ConfigConnParams struct {
+	ConnTypeConf string
+	HostConf string
+	PortConf string
+
+}
+
+type TransferConnParams struct {
+	HostOut string
+	PortOut string
+	ConnTypeOut string
+}
+
+type CollectData struct {
+	CBot chan FridgeGenerData
+	CTop chan FridgeGenerData
+	ReqChan chan Request
+	Wg      sync.WaitGroup
 }
