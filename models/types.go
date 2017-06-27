@@ -1,7 +1,7 @@
 package models
 
 import (
-	"sync"
+	"sync" // TODO deal with the import
 )
 
 type Request struct {

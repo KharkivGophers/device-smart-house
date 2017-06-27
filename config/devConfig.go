@@ -17,10 +17,11 @@ type DevConfig struct {
 	subsPool    map[string]chan struct{}
 }
 
-var config *DevConfig
-var once sync.Once
+var config *DevConfig // TODO remove global variable
+var once sync.Once // TODO remove global variable
 
 func GetConfig() *DevConfig {
+
 	once.Do(func() {
 		config = &DevConfig{}
 		config.subsPool = make(map[string]chan struct{})
@@ -149,7 +150,6 @@ func publishConfig(d *DevConfig) {
 }
 
 func Init(connType string, host string, port string) {
-	// var times int
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {

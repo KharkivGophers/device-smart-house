@@ -7,13 +7,12 @@ import (
 	"os"
 	"sync"
 	"time"
-
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 	log "github.com/Sirupsen/logrus"
 )
 
-var requestsCounter int
+var requestsCounter int // TODO remove global variable
 
 func GetEnvCenter(key string) string {
 	host := os.Getenv(key)
@@ -45,7 +44,7 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 	}
 }
 
-//DataCollector func gathers data from DataGenerator
+//DataCollector gathers data from DataGenerator
 //and sends completed request's structures to the ReqChan channel
 func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop <-chan models.FridgeGenerData,
 	ReqChan chan models.Request, stopInner chan struct{}, wg *sync.WaitGroup) {
@@ -75,7 +74,7 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 	}
 }
 
-//DataGenerator func generates pseudo-random data that represents device's behavior
+//DataGenerator generates pseudo-random data that represents device's behavior
 func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop chan<- models.FridgeGenerData,
 	stopInner chan struct{}, wg *sync.WaitGroup) {
 
