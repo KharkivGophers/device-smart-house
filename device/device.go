@@ -12,8 +12,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var requestsCounter int // TODO remove global variable
-
 func GetEnvCenter(key string) string {
 	host := os.Getenv(key)
 	if len(host) == 0 {
@@ -35,11 +33,11 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 
 
 	conn := getDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
-
+	var requestsCounter int
 	for {
 		select {
 		case r := <-reqChan:
-			go send(r, conn)
+			go send(r, conn, &requestsCounter)
 		}
 	}
 }
@@ -215,7 +213,7 @@ func getDial(connType string, host string, port string) net.Conn {
 	return conn
 }
 
-func send(r models.Request, conn net.Conn) {
+func send(r models.Request, conn net.Conn, requestsCounter *int) {
 	var resp models.Response
 	r.Time = time.Now().UnixNano()
 
@@ -224,8 +222,8 @@ func send(r models.Request, conn net.Conn) {
 
 	err = json.NewDecoder(conn).Decode(&resp)
 	checkError("send(): JSON Decode: ", err)
-	requestsCounter++
-	log.Infoln("Request number:", requestsCounter)
+	*requestsCounter++
+	log.Infoln("Request number:", *requestsCounter)
 	log.Infoln("send(): Response from center: ", resp)
 }
 
