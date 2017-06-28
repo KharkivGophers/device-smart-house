@@ -1,4 +1,4 @@
-package TCPConnection
+package TCP
 
 import (
 	"os"

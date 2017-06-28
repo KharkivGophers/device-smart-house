@@ -20,79 +20,17 @@ type DevConfig struct {
 var once sync.Once // TODO remove global variable
 var config *DevConfig // TODO remove global variable
 
-func GetConfig() *DevConfig {
-	once.Do(func() {
-		config = &DevConfig{}
-		config.subsPool = make(map[string]chan struct{})
-	})
-	return config
-}
-
-func (d *DevConfig) SetTurned(b bool) {
-	d.Mutex.Lock()
-	d.turned = b
-	defer d.Mutex.Unlock()
-}
-
-func (d *DevConfig) GetTurned() bool {
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
-	return d.turned
-}
-
-func (d *DevConfig) GetCollectFreq() int64 {
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
-	return d.collectFreq
-}
-
-func (d *DevConfig) GetSendFreq() int64 {
-	d.Mutex.Lock()
-	defer d.Mutex.Unlock()
-	return d.sendFreq
-}
-
-func (d *DevConfig) SetCollectFreq(b int64) {
-	d.Mutex.Lock()
-	d.collectFreq = b
-	d.Mutex.Unlock()
-
-}
-
-func (d *DevConfig) SetSendFreq(b int64) {
-	d.Mutex.Lock()
-	d.sendFreq = b
-	d.Mutex.Unlock()
-
-}
-
+// to TCP
 func (d *DevConfig) AddSubIntoPool(key string, value chan struct{}) {
 	d.Mutex.Lock()
 	d.subsPool[key] = value
 	d.Mutex.Unlock()
-
 }
 
 func (d *DevConfig) RemoveSubFromPool(key string) {
 	d.Mutex.Lock()
 	delete(d.subsPool, key)
 	d.Mutex.Unlock()
-
-}
-
-func (d *DevConfig) updateConfig(c models.Config) {
-	d.turned = c.TurnedOn
-	d.sendFreq = c.SendFreq
-	log.Warningln("SendFreq: ", d.sendFreq)
-	d.collectFreq = c.CollectFreq
-	log.Warningln("CollectFreq: ", d.collectFreq)
-
-	switch d.turned {
-	case false:
-		log.Warningln("ON PAUSE")
-	case true:
-		log.Warningln("WORKING")
-	}
 }
 
 func askConfig(conn net.Conn) models.Config {
@@ -122,7 +60,6 @@ func askConfig(conn net.Conn) models.Config {
 	}
 
 	return resp
-
 }
 
 func listenConfig(devConfig *DevConfig, conn net.Conn) {
@@ -148,6 +85,22 @@ func publishConfig(d *DevConfig) {
 	}
 }
 
+
+func (d *DevConfig) updateConfig(c models.Config) {
+	d.turned = c.TurnedOn
+	d.sendFreq = c.SendFreq
+	log.Warningln("SendFreq: ", d.sendFreq)
+	d.collectFreq = c.CollectFreq
+	log.Warningln("CollectFreq: ", d.collectFreq)
+
+	switch d.turned {
+	case false:
+		log.Warningln("ON PAUSE")
+	case true:
+		log.Warningln("WORKING")
+	}
+}
+
 func Init(connType string, host string, port string) {
 	config := GetConfig()
 	conn, err := net.Dial(connType, host+":"+port)
@@ -161,7 +114,6 @@ func Init(connType string, host string, port string) {
 			listenConfig(config, conn)
 		}
 	}()
-
 }
 
 func checkError(desc string, err error) error {

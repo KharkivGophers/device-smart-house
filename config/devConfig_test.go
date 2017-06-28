@@ -5,66 +5,10 @@ import (
 	"net"
 	"os"
 	"testing"
-
 	"github.com/KharkivGophers/device-smart-house/models"
-
 	"errors"
-
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func TestSetTurned(t *testing.T) {
-	Convey("Should set valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetTurned(false)
-		So(cfg.GetTurned(), ShouldEqual, false)
-	})
-}
-
-func TestGetTurned(t *testing.T) {
-
-	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetTurned(false)
-		So(cfg.GetTurned(), ShouldEqual, false)
-	})
-}
-
-func TestSetCollectFreq(t *testing.T) {
-
-	Convey("Should set valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetCollectFreq(1000)
-		So(cfg.GetCollectFreq(), ShouldEqual, 1000)
-	})
-}
-
-func TestGetCollectFreq(t *testing.T) {
-
-	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetCollectFreq(1000)
-		So(cfg.GetCollectFreq(), ShouldEqual, 1000)
-	})
-}
-
-func TestSetSendFreq(t *testing.T) {
-
-	Convey("Should set valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetSendFreq(1000)
-		So(cfg.GetSendFreq(), ShouldEqual, 1000)
-	})
-}
-
-func TestGetSendFreq(t *testing.T) {
-
-	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetSendFreq(1000)
-		So(cfg.GetSendFreq(), ShouldEqual, 1000)
-	})
-}
 
 func TestAddSubIntoPool(t *testing.T) {
 	ch := make(chan struct{})
