@@ -12,6 +12,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// Connection
 func GetEnvCenter(key string) string {
 	host := os.Getenv(key)
 	if len(host) == 0 {

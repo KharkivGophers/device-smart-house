@@ -17,11 +17,10 @@ type DevConfig struct {
 	subsPool    map[string]chan struct{}
 }
 
-var config *DevConfig // TODO remove global variable
 var once sync.Once // TODO remove global variable
+var config *DevConfig // TODO remove global variable
 
 func GetConfig() *DevConfig {
-
 	once.Do(func() {
 		config = &DevConfig{}
 		config.subsPool = make(map[string]chan struct{})

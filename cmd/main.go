@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-
-	collectData := models.CollectData{
+	collectData := models.CollectFridgeData{
 		CTop: make(chan models.FridgeGenerData, 100), // First Cam
 		CBot: make(chan models.FridgeGenerData, 100), // Second Cam
 		ReqChan: make(chan models.Request),
@@ -22,6 +21,7 @@ func main() {
 
 	var conf *config.DevConfig
 	conf = config.GetConfig()
+
 
 	config.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)
 	collectData.Wg.Add(1)
