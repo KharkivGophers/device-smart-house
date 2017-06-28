@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-//DataGenerator generates pseudo-random data that represents device's behavior
+//DataGenerator generates pseudo-random data that represents devices's behavior
 func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop chan<- models.FridgeGenerData,
 	stopInner chan struct{}, wg *sync.WaitGroup) {
 

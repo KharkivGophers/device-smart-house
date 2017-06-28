@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
-	"github.com/KharkivGophers/device-smart-house/connection"
-	"github.com/KharkivGophers/device-smart-house/fridge"
+	"github.com/KharkivGophers/device-smart-house/TCPConnection"
+	"github.com/KharkivGophers/device-smart-house/devices/fridge"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 
 	configConnParams := models.ConfigConnParams{
 		ConnTypeConf: "tcp",
-		HostConf: connection.GetEnvCenter("CENTER_PORT_3000_TCP_ADDR"),
-		PortConf: "3000",
+		HostConf:     TCPConnection.GetEnvCenter("CENTER_PORT_3000_TCP_ADDR"),
+		PortConf:     "3000",
 	}
 
 	var conf *config.DevConfig

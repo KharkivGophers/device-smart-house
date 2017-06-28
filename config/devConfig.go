@@ -99,7 +99,7 @@ func askConfig(conn net.Conn) models.Config {
 	args := os.Args[1:]
 	log.Warningln("Type:"+"["+args[0]+"];", "Name:"+"["+args[1]+"];", "MAC:"+"["+args[2]+"]")
 	if len(args) < 3 {
-		panic("Incorrect device's information")
+		panic("Incorrect devices's information")
 	}
 
 	var req models.Request
