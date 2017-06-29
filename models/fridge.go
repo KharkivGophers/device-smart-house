@@ -16,5 +16,5 @@ type CollectFridgeData struct {
 	CBot chan FridgeGenerData
 	CTop chan FridgeGenerData
 	ReqChan chan Request
-	Wg      sync.WaitGroup
+	Wg      sync.WaitGroup // TODO to main
 }

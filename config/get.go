@@ -1,12 +1,10 @@
 package config
 
+func NewConfig() *DevConfig {
+	conf := &DevConfig{}
+	conf.subsPool = make(map[string]chan struct{})
 
-func GetConfig() *DevConfig {
-	once.Do(func() {
-		config = &DevConfig{}
-		config.subsPool = make(map[string]chan struct{})
-	})
-	return config
+	return conf
 }
 
 func (d *DevConfig) GetTurned() bool {

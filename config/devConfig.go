@@ -18,10 +18,6 @@ type DevConfig struct {
 	subsPool    map[string]chan struct{}
 }
 
-var once sync.Once // TODO remove global variable
-var config *DevConfig // TODO remove global variable
-
-// to TCP
 func (d *DevConfig) AddSubIntoPool(key string, value chan struct{}) {
 	d.Mutex.Lock()
 	d.subsPool[key] = value
@@ -86,7 +82,6 @@ func publishConfig(d *DevConfig) {
 	}
 }
 
-
 func (d *DevConfig) updateConfig(c models.Config) {
 	d.turned = c.TurnedOn
 	d.sendFreq = c.SendFreq
@@ -102,17 +97,16 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	}
 }
 
-func Init(connType string, host string, port string) {
-	config := GetConfig()
+func (dc *DevConfig) Init(connType string, host string, port string) {
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
 		panic("Can't connect to the server: " + host + ":" + port)
 	}
 
-	config.updateConfig(askConfig(conn))
+	dc.updateConfig(askConfig(conn))
 	go func() {
 		for {
-			listenConfig(config, conn)
+			listenConfig(dc, conn)
 		}
 	}()
 }

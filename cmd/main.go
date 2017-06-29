@@ -20,10 +20,9 @@ func main() {
 		PortConf:     "3000",
 	}
 
-	var conf *config.DevConfig
-	conf = config.GetConfig()
+	conf := config.NewConfig()
 
-	config.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)
+	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)
 	collectData.Wg.Add(1)
 	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &collectData.Wg)
 	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &collectData.Wg)
