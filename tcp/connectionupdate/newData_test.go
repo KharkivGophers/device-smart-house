@@ -1,4 +1,4 @@
-package TCP
+package connectionupdate
 
 import (
 	"net"
@@ -15,7 +15,7 @@ func TestGetDial(t *testing.T) {
 	hostConf := "0.0.0.0"
 	portConf := "3000"
 
-	Convey("TCP TCP should be established", t, func() {
+	Convey("tcp tcp should be established", t, func() {
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
 		conn := GetDial(connTypeConf, hostConf, portConf)
 		time.Sleep(time.Millisecond * 100)

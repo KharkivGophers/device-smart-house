@@ -1,4 +1,4 @@
-package TCP
+package connectionupdate
 
 import (
 	"os"

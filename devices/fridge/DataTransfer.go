@@ -2,7 +2,7 @@ package fridge
 
 import (
 	"github.com/KharkivGophers/device-smart-house/config"
-	"github.com/KharkivGophers/device-smart-house/TCP"
+	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/models"
 )
 
@@ -17,12 +17,12 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 		ConnTypeOut: "tcp",
 	}
 
-	conn := TCP.GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
+	conn := connectionupdate.GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
 	var requestsCounter int
 	for {
 		select {
 		case r := <-reqChan:
-			go TCP.Send(r, conn, &requestsCounter)
+			go connectionupdate.Send(r, conn, &requestsCounter)
 		}
 	}
 }

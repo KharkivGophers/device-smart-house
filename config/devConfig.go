@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
-	"os"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/error"
+	"github.com/KharkivGophers/device-smart-house/tcp/connectionconfig"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -28,35 +28,6 @@ func (d *DevConfig) RemoveSubFromPool(key string) {
 	d.Mutex.Lock()
 	delete(d.subsPool, key)
 	d.Mutex.Unlock()
-}
-
-func askConfig(conn net.Conn) models.Config {
-	args := os.Args[1:]
-	log.Warningln("Type:"+"["+args[0]+"];", "Name:"+"["+args[1]+"];", "MAC:"+"["+args[2]+"]")
-	if len(args) < 3 {
-		panic("Incorrect devices's information")
-	}
-
-	var req models.Request
-	var resp models.Config
-	req = models.Request{
-		Action: "config",
-		Meta: models.Metadata{
-			Type: args[0],
-			Name: args[1],
-			MAC:  args[2]},
-	}
-	err := json.NewEncoder(conn).Encode(req)
-	error.CheckError("askConfig(): Encode JSON", err)
-
-	err = json.NewDecoder(conn).Decode(&resp)
-	error.CheckError("askConfig(): Decode JSON", err)
-
-	if err != nil && resp.IsEmpty() {
-		panic("Connection has been closed by center")
-	}
-
-	return resp
 }
 
 func listenConfig(devConfig *DevConfig, conn net.Conn) {
@@ -103,7 +74,7 @@ func (dc *DevConfig) Init(connType string, host string, port string) {
 		panic("Can't connect to the server: " + host + ":" + port)
 	}
 
-	dc.updateConfig(askConfig(conn))
+	dc.updateConfig(connectionconfig.AskConfig(conn))
 	go func() {
 		for {
 			listenConfig(dc, conn)
