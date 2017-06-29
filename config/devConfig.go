@@ -6,6 +6,7 @@ import (
 	"sync"
 	"os"
 	"github.com/KharkivGophers/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/error"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -50,10 +51,10 @@ func askConfig(conn net.Conn) models.Config {
 			MAC:  args[2]},
 	}
 	err := json.NewEncoder(conn).Encode(req)
-	checkError("askConfig(): Encode JSON", err)
+	error.CheckError("askConfig(): Encode JSON", err)
 
 	err = json.NewDecoder(conn).Decode(&resp)
-	checkError("askConfig(): Decode JSON", err)
+	error.CheckError("askConfig(): Decode JSON", err)
 
 	if err != nil && resp.IsEmpty() {
 		panic("Connection has been closed by center")
@@ -67,7 +68,7 @@ func listenConfig(devConfig *DevConfig, conn net.Conn) {
 	var config models.Config
 
 	err := json.NewDecoder(conn).Decode(&config)
-	checkError("listenConfig(): Decode JSON", err)
+	error.CheckError("listenConfig(): Decode JSON", err)
 
 	resp.Descr = "Config have been received"
 
@@ -75,7 +76,7 @@ func listenConfig(devConfig *DevConfig, conn net.Conn) {
 	go publishConfig(devConfig)
 
 	err = json.NewEncoder(conn).Encode(&resp)
-	checkError("listenConfig(): Encode JSON", err)
+	error.CheckError("listenConfig(): Encode JSON", err)
 
 }
 
@@ -114,12 +115,4 @@ func Init(connType string, host string, port string) {
 			listenConfig(config, conn)
 		}
 	}()
-}
-
-func checkError(desc string, err error) error {
-	if err != nil {
-		log.Errorln(desc, err)
-		return err
-	}
-	return nil
 }

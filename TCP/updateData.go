@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/KharkivGophers/device-smart-house/models"
 	log "github.com/Sirupsen/logrus"
+	"github.com/KharkivGophers/device-smart-house/error"
 )
 
 // Connection
@@ -28,7 +29,7 @@ func GetDial(connType string, host string, port string) net.Conn {
 		}
 		time.Sleep(time.Second)
 		conn, err = net.Dial(connType, host+":"+port)
-		checkError("getDial()", err)
+		error.CheckError("getDial()", err)
 		times++
 		log.Warningln("Reconnect times: ", times)
 	}
@@ -40,19 +41,12 @@ func Send(r models.Request, conn net.Conn, requestsCounter *int) {
 	r.Time = time.Now().UnixNano()
 
 	err := json.NewEncoder(conn).Encode(r)
-	checkError("send(): JSON Encode: ", err)
+	error.CheckError("send(): JSON Encode: ", err)
 
 	err = json.NewDecoder(conn).Decode(&resp)
-	checkError("send(): JSON Decode: ", err)
+	error.CheckError("send(): JSON Decode: ", err)
 	*requestsCounter++
 	log.Infoln("Request number:", *requestsCounter)
 	log.Infoln("send(): Response from center: ", resp)
 }
 
-func checkError(desc string, err error) error {
-	if err != nil {
-		log.Errorln(desc, err)
-		return err
-	}
-	return nil
-}

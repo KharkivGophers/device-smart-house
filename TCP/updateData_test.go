@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 	. "github.com/smartystreets/goconvey/convey"
-	"errors"
 	"os"
 	"encoding/json"
 	"github.com/KharkivGophers/device-smart-house/models"
@@ -54,14 +53,6 @@ func TestSend(t *testing.T) {
 		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
 		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
 		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
-	})
-}
-
-func TestCheckError(t *testing.T) {
-	exErr := errors.New("Produce error")
-	Convey("CheckError should return error's value", t, func() {
-		err := checkError("Error message", exErr)
-		So(err.Error(), ShouldEqual, exErr.Error())
 	})
 }
 

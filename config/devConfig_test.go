@@ -51,14 +51,6 @@ func TestUpdateConfig(t *testing.T) {
 	})
 }
 
-func TestCheckError(t *testing.T) {
-
-	Convey("CheckError should return error's value", t, func() {
-		exErr := errors.New("Produce error")
-		err := checkError("Error message", exErr)
-		So(err.Error(), ShouldEqual, exErr.Error())
-	})
-}
 
 func TestListenConfig(t *testing.T) {
 	maskOsArgs()
