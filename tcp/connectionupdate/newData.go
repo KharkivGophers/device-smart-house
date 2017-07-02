@@ -41,12 +41,20 @@ func Send(r models.Request, conn net.Conn, requestsCounter *int) {
 	r.Time = time.Now().UnixNano()
 
 	err := json.NewEncoder(conn).Encode(r)
+
+	if err != nil {
+		panic("Nothing to encode")
+	}
 	error.CheckError("send(): JSON Encode: ", err)
 
 	err = json.NewDecoder(conn).Decode(&resp)
+
 	error.CheckError("send(): JSON Decode: ", err)
+	if err != nil {
+		panic("No response found")
+	}
+
 	*requestsCounter++
 	log.Infoln("Request number:", *requestsCounter)
 	log.Infoln("send(): Response from center: ", resp)
 }
-

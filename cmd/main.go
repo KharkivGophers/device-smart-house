@@ -10,6 +10,7 @@ import (
 
 func main() {
 	var Wg sync.WaitGroup
+	//control := make(chan struct{})
 
 	collectData := models.CollectFridgeData{
 		CTop: make(chan models.FridgeGenerData, 100), // First Cam
@@ -24,11 +25,14 @@ func main() {
 	}
 
 	conf := config.NewConfig()
-
+	defer func() {
+		if r := recover(); r != nil {
+		}
+	} ()
 	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)
 	Wg.Add(1)
 	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &Wg)
 	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &Wg)
-	go fridge.DataTransfer(conf, collectData.ReqChan)
+	go fridge.DataTransfer(conf, collectData.ReqChan, &Wg)
 	Wg.Wait()
 }

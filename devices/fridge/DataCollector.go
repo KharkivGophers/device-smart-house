@@ -3,7 +3,7 @@ package fridge
 import (
 	"time"
 	"sync"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"os"
@@ -20,7 +20,6 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 	for {
 		select {
 		case <-stopInner:
-
 			log.Println("DataCollector(): wg.Done()")
 			wg.Done()
 			return
@@ -42,6 +41,7 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 //RunDataCollector setups DataCollector
 func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
 	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, wg *sync.WaitGroup) {
+
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
 	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)

@@ -4,10 +4,12 @@ import (
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/models"
+	"sync"
+	log "github.com/Sirupsen/logrus"
 )
 
 //DataTransfer func sends request as JSON to the centre
-func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
+func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *sync.WaitGroup) {
 
 	// for data transfer
 	transferConnParams := models.TransferConnParams{
@@ -19,10 +21,19 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request) {
 
 	conn := connectionupdate.GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
 	var requestsCounter int
+
 	for {
 		select {
 		case r := <-reqChan:
-			go connectionupdate.Send(r, conn, &requestsCounter)
+			go func() {
+				defer func() {
+					if a := recover(); a != nil {
+						log.Error(a)
+						wg.Done()
+					}
+				} ()
+				connectionupdate.Send(r, conn, &requestsCounter)
+			}()
 		}
 	}
 }

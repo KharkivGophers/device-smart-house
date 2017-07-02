@@ -20,7 +20,6 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 			cBot <- models.FridgeGenerData{Time: makeTimestamp(), Data: (rand.Float32() * 10) - 8}
 
 		case <-stopInner:
-
 			log.Println("DataGenerator(): wg.Done()")
 			wg.Done()
 			return
