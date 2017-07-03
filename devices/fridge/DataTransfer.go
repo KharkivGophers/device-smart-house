@@ -20,7 +20,6 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *syn
 	}
 
 	conn := connectionupdate.GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
-	var requestsCounter int
 
 	for {
 		select {
@@ -32,7 +31,7 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *syn
 						wg.Done()
 					}
 				} ()
-				connectionupdate.Send(r, conn, &requestsCounter)
+				connectionupdate.Send(r, conn)
 			}()
 		}
 	}

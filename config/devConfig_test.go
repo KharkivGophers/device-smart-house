@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 	"github.com/KharkivGophers/device-smart-house/models"
-	"errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -15,9 +14,9 @@ func TestAddSubIntoPool(t *testing.T) {
 	key := "19-29"
 
 	Convey("AddSubIntoPool should add chan into the pool", t, func() {
-		cfg := GetConfig()
-		cfg.AddSubIntoPool(key, ch)
-		So(cfg.subsPool[key], ShouldEqual, ch)
+		testConfig := NewConfig()
+		testConfig.AddSubIntoPool(key, ch)
+		So(testConfig.subsPool[key], ShouldEqual, ch)
 	})
 }
 
@@ -26,11 +25,11 @@ func TestRemoveSubFromPool(t *testing.T) {
 	key := "19-29"
 
 	Convey("RemoveSubFromPool should remove chan from the pool", t, func() {
-		cfg := GetConfig()
-		cfg.AddSubIntoPool(key, ch)
+		testConfig := NewConfig()
+		testConfig.AddSubIntoPool(key, ch)
 
-		cfg.RemoveSubFromPool(key)
-		So(cfg.subsPool[key], ShouldEqual, nil)
+		testConfig.RemoveSubFromPool(key)
+		So(testConfig.subsPool[key], ShouldEqual, nil)
 	})
 }
 
@@ -43,11 +42,11 @@ func TestUpdateConfig(t *testing.T) {
 		CollectFreq: 50}
 
 	Convey("UpdateConfig should update struct by new struct's values", t, func() {
-		cfg := GetConfig()
-		cfg.updateConfig(exCfg)
-		So(cfg.GetTurned(), ShouldEqual, exCfg.TurnedOn)
-		So(cfg.GetCollectFreq(), ShouldEqual, exCfg.CollectFreq)
-		So(cfg.GetSendFreq(), ShouldEqual, exCfg.SendFreq)
+		testConfig := NewConfig()
+		testConfig.updateConfig(exCfg)
+		So(testConfig.GetTurned(), ShouldEqual, exCfg.TurnedOn)
+		So(testConfig.GetCollectFreq(), ShouldEqual, exCfg.CollectFreq)
+		So(testConfig.GetSendFreq(), ShouldEqual, exCfg.SendFreq)
 	})
 }
 
@@ -83,14 +82,13 @@ func TestListenConfig(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
+		testConfig := NewConfig()
 
-		devConfig := GetConfig()
+		listenConfig(testConfig, client)
 
-		listenConfig(devConfig, client)
-
-		So(devConfig.GetSendFreq(), ShouldEqual, 5000)
-		So(devConfig.GetCollectFreq(), ShouldEqual, 1000)
-		So(devConfig.GetTurned(), ShouldEqual, true)
+		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
+		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
+		So(testConfig.GetTurned(), ShouldEqual, true)
 	})
 }
 
@@ -166,12 +164,13 @@ func TestInit(t *testing.T) {
 				t.Fail()
 			}
 		}()
+		testConfig := NewConfig()
 
-		Init(connTypeConf, hostConf, portConf)
-		cfg := GetConfig()
-		So(cfg.GetSendFreq(), ShouldEqual, 5000)
-		So(cfg.GetCollectFreq(), ShouldEqual, 1000)
-		So(cfg.GetTurned(), ShouldEqual, true)
+		testConfig.Init(connTypeConf, hostConf, portConf)
+
+		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
+		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
+		So(testConfig.GetTurned(), ShouldEqual, true)
 	})
 }
 

@@ -8,27 +8,26 @@ import (
 func TestGetTurned(t *testing.T) {
 
 	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetTurned(false)
-		So(cfg.GetTurned(), ShouldEqual, false)
+		testConfig := NewConfig()
+		testConfig.SetTurned(false)
+		So(testConfig.GetTurned(), ShouldEqual, false)
 	})
 }
 
 func TestGetCollectFreq(t *testing.T) {
 
 	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetCollectFreq(1000)
-		So(cfg.GetCollectFreq(), ShouldEqual, 1000)
+		testConfig := NewConfig()
+		testConfig.SetCollectFreq(1000)
+		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
 	})
 }
 
 
 func TestGetSendFreq(t *testing.T) {
-
+	testConfig := NewConfig()
 	Convey("Should get valid value", t, func() {
-		cfg := GetConfig()
-		cfg.SetSendFreq(1000)
-		So(cfg.GetSendFreq(), ShouldEqual, 1000)
+		testConfig.SetSendFreq(1000)
+		So(testConfig.GetSendFreq(), ShouldEqual, 1000)
 	})
 }

@@ -36,7 +36,7 @@ func GetDial(connType string, host string, port string) net.Conn {
 	return conn
 }
 
-func Send(r models.Request, conn net.Conn, requestsCounter *int) {
+func Send(r models.Request, conn net.Conn) {
 	var resp models.Response
 	r.Time = time.Now().UnixNano()
 
@@ -54,7 +54,6 @@ func Send(r models.Request, conn net.Conn, requestsCounter *int) {
 		panic("No response found")
 	}
 
-	*requestsCounter++
-	log.Infoln("Request number:", *requestsCounter)
+	log.Infoln("Request:")
 	log.Infoln("send(): Response from center: ", resp)
 }
