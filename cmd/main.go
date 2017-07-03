@@ -6,6 +6,7 @@ import (
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/devices/fridge"
 	"sync"
+	"log"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	conf := config.NewConfig()
 	defer func() {
 		if r := recover(); r != nil {
+			log.Print(r)
 		}
 	} ()
 	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)

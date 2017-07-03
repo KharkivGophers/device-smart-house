@@ -37,8 +37,7 @@ func listenConfig(devConfig *DevConfig, conn net.Conn) {
 
 	err := json.NewDecoder(conn).Decode(&config)
 	if err != nil {
-		log.Error("No config to decode!")
-		panic("No config")
+		panic("No config found!")
 	}
 	error.CheckError("listenConfig(): Decode JSON", err)
 
@@ -76,7 +75,7 @@ func (dc *DevConfig) Init(connType string, host string, port string) {
 
 	for err != nil {
 		log.Error("Can't connect to the server: " + host + ":" + port)
-		panic("No center")
+		panic("No center found!")
 	}
 
 	dc.updateConfig(connectionconfig.AskConfig(conn))
@@ -84,6 +83,7 @@ func (dc *DevConfig) Init(connType string, host string, port string) {
 		for {
 			defer func() {
 				if r := recover(); r != nil {
+					log.Error(r)
 					os.Exit(17)
 				}
 			} ()
