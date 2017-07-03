@@ -42,3 +42,7 @@ type TransferConnParams struct {
 type Response struct {
 	Descr string `json:"descr"`
 }
+
+type Closer struct {
+	Control chan bool
+}

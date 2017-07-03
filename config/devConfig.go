@@ -8,7 +8,6 @@ import (
 	"github.com/KharkivGophers/device-smart-house/error"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionconfig"
 	log "github.com/Sirupsen/logrus"
-	"os"
 )
 
 type DevConfig struct {
@@ -70,7 +69,7 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	}
 }
 
-func (dc *DevConfig) Init(connType string, host string, port string) {
+func (dc *DevConfig) Init(connType string, host string, port string, wg *sync.WaitGroup) {
 	conn, err := net.Dial(connType, host+":"+port)
 
 	for err != nil {
@@ -84,7 +83,7 @@ func (dc *DevConfig) Init(connType string, host string, port string) {
 			defer func() {
 				if r := recover(); r != nil {
 					log.Error(r)
-					os.Exit(17)
+					wg.Done()
 				}
 			} ()
 			listenConfig(dc, conn)

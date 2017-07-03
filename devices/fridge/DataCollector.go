@@ -41,7 +41,7 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 //RunDataCollector setups DataCollector
 func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
 	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, wg *sync.WaitGroup) {
-
+	wg.Add(1)
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
 	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)

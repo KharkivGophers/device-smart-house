@@ -9,9 +9,17 @@ import (
 	"log"
 )
 
+//
+//func (c *Closer) Close() {
+//	select {
+//	case <- c.Control:
+//	default:
+//		close(c.Control)
+//	}
+//}
+
 func main() {
 	var Wg sync.WaitGroup
-	//control := make(chan struct{})
 
 	collectData := models.CollectFridgeData{
 		CTop: make(chan models.FridgeGenerData, 100), // First Cam
@@ -31,10 +39,13 @@ func main() {
 			log.Print(r)
 		}
 	} ()
-	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf)
+	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, &Wg)
+
 	Wg.Add(1)
 	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &Wg)
 	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &Wg)
 	go fridge.DataTransfer(conf, collectData.ReqChan, &Wg)
+
 	Wg.Wait()
+	log.Println("DONE")
 }
