@@ -8,6 +8,7 @@ import (
 	"github.com/KharkivGophers/device-smart-house/error"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionconfig"
 	log "github.com/Sirupsen/logrus"
+	"os"
 )
 
 type DevConfig struct {
@@ -83,6 +84,7 @@ func (dc *DevConfig) Init(connType string, host string, port string) {
 		for {
 			defer func() {
 				if r := recover(); r != nil {
+					os.Exit(17)
 				}
 			} ()
 			listenConfig(dc, conn)
