@@ -52,6 +52,7 @@ func TestDataTransfer(t *testing.T) {
 			t.Fail()
 		}
 		var Wg sync.WaitGroup
+		control := &models.Control{make(chan struct{})}
 		go func() {
 			defer ln.Close()
 			server, err := ln.Accept()
@@ -63,7 +64,7 @@ func TestDataTransfer(t *testing.T) {
 				t.Fail()
 			}
 		}()
-		go DataTransfer(testConfig, ch, &Wg)
+		go DataTransfer(testConfig, ch, &Wg, control)
 
 		ch <- exReq
 		//need to refactor DataTransfer (can't wait for it)
@@ -75,6 +76,5 @@ func TestDataTransfer(t *testing.T) {
 		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
 		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
 		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
-
 	})
 }

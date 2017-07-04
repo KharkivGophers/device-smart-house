@@ -7,6 +7,7 @@ import (
 	"testing"
 	"github.com/KharkivGophers/device-smart-house/models"
 	. "github.com/smartystreets/goconvey/convey"
+	"sync"
 )
 
 func TestAddSubIntoPool(t *testing.T) {
@@ -152,6 +153,8 @@ func TestInit(t *testing.T) {
 	portConf := "3000"
 
 	Convey("Init should receive config", t, func() {
+		var Wg sync.WaitGroup
+		control := &models.Control{make(chan struct{})}
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
 		go func() {
 			defer ln.Close()
@@ -166,7 +169,7 @@ func TestInit(t *testing.T) {
 		}()
 		testConfig := NewConfig()
 
-		testConfig.Init(connTypeConf, hostConf, portConf)
+		testConfig.Init(connTypeConf, hostConf, portConf, &Wg, control)
 
 		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
 		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)

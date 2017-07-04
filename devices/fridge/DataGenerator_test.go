@@ -22,7 +22,7 @@ func TestDataGenerator(t *testing.T) {
 		var fromTop, fromBot models.FridgeGenerData
 		var okTop, okBot bool
 
-		go DataGenerator(ticker, bot, top, stopInner, &wg)
+		go DataGenerator(ticker, bot, top, stopInner)
 		fromTop, okTop = <-top
 		fromBot, okBot = <-bot
 
