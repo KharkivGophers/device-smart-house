@@ -6,17 +6,8 @@ import (
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/devices/fridge"
 	"sync"
-	"log"
+	log "github.com/Sirupsen/logrus"
 )
-
-//
-//func (c *Closer) Close() {
-//	select {
-//	case <- c.Control:
-//	default:
-//		close(c.Control)
-//	}
-//}
 
 func main() {
 	var Wg sync.WaitGroup
@@ -36,16 +27,16 @@ func main() {
 	conf := config.NewConfig()
 	defer func() {
 		if r := recover(); r != nil {
-			log.Print(r)
 		}
 	} ()
-	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, &Wg)
 
-	Wg.Add(1)
-	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &Wg)
-	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &Wg)
-	go fridge.DataTransfer(conf, collectData.ReqChan, &Wg)
+	control := &models.Control{make(chan struct{})}
+	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, &Wg, control)
+
+	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &Wg, control)
+	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &Wg, control)
+	go fridge.DataTransfer(conf, collectData.ReqChan, &Wg, control)
 
 	Wg.Wait()
-	log.Println("DONE")
+	log.Info("DONE")
 }

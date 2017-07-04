@@ -13,7 +13,6 @@ import (
 //and sends completed request's structures to the ReqChan channel
 func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop <-chan models.FridgeGenerData,
 	ReqChan chan models.Request, stopInner chan struct{}, wg *sync.WaitGroup) {
-
 	var mTop = make(map[int64]float32)
 	var mBot = make(map[int64]float32)
 
@@ -40,8 +39,8 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 
 //RunDataCollector setups DataCollector
 func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
-	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, wg *sync.WaitGroup) {
-	wg.Add(1)
+	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, wg *sync.WaitGroup, c *models.Control) {
+
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
 	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)
@@ -62,7 +61,6 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 			case true:
 				select {
 				case <-stopInner:
-					wg.Add(1)
 					stopInner = make(chan struct{})
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
@@ -70,7 +68,6 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 				default:
 					close(stopInner)
 					stopInner = make(chan struct{})
-					wg.Add(1)
 					ticker = time.NewTicker(time.Duration(config.GetSendFreq()) * time.Millisecond)
 					go DataCollector(ticker, cBot, cTop, ReqChan, stopInner, wg)
 					log.Println("DataCollector() has been started")
@@ -84,6 +81,10 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 					log.Println("DataCollector() has been killed")
 				}
 			}
+		case <- c.Controller:
+			wg.Done()
+			log.Error("Data Collector Failed")
+			return
 		}
 	}
 }

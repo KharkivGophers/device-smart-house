@@ -43,6 +43,14 @@ type Response struct {
 	Descr string `json:"descr"`
 }
 
-type Closer struct {
-	Control chan bool
+type Control struct {
+	Controller chan struct{}
+}
+
+func (c *Control) Close() {
+	select {
+	case <- c.Controller:
+	default:
+		close(c.Controller)
+	}
 }

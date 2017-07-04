@@ -69,9 +69,9 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	}
 }
 
-func (dc *DevConfig) Init(connType string, host string, port string, wg *sync.WaitGroup) {
+func (dc *DevConfig) Init(connType string, host string, port string, wg *sync.WaitGroup, c *models.Control) {
 	conn, err := net.Dial(connType, host+":"+port)
-
+	wg.Add(1)
 	for err != nil {
 		log.Error("Can't connect to the server: " + host + ":" + port)
 		panic("No center found!")
@@ -82,8 +82,9 @@ func (dc *DevConfig) Init(connType string, host string, port string, wg *sync.Wa
 		for {
 			defer func() {
 				if r := recover(); r != nil {
-					log.Error(r)
+					c.Close()
 					wg.Done()
+					log.Error("Initialization Failed")
 				}
 			} ()
 			listenConfig(dc, conn)

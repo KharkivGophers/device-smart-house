@@ -9,8 +9,9 @@ import (
 )
 
 //DataTransfer func sends request as JSON to the centre
-func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *sync.WaitGroup) {
+func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *sync.WaitGroup, c *models.Control) {
 
+	wg.Add(1)
 	// for data transfer
 	transferConnParams := models.TransferConnParams{
 		// HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),
@@ -28,11 +29,15 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *syn
 				defer func() {
 					if a := recover(); a != nil {
 						log.Error(a)
-						wg.Done()
+						c.Close()
 					}
 				} ()
 				connectionupdate.Send(r, conn)
 			}()
+		case <- c.Controller:
+			wg.Done()
+			log.Error("Data Transfer Failed")
+			return
 		}
 	}
 }
