@@ -6,7 +6,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
-	"sync"
 )
 
 //DataGenerator generates pseudo-random data that represents devices's behavior
@@ -28,9 +27,8 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 
 //RunDataGenerator setups DataGenerator
 func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerData,
-	cTop chan<- models.FridgeGenerData, wg *sync.WaitGroup, c *models.Control) {
+	cTop chan<- models.FridgeGenerData, c *models.Control) {
 
-	wg.Add(1)
 	duration := config.GetCollectFreq()
 	ticker := time.NewTicker(time.Duration(duration) * time.Millisecond)
 	stopInner := make(chan struct{})
@@ -72,7 +70,7 @@ func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerDa
 				}
 			}
 		case <- c.Controller:
-			wg.Done()
+			//wg.Done()
 			log.Error("Data Generator Failed")
 			return
 		}

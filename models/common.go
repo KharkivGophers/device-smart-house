@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Request struct {
 	Action string     `json:"action"`
 	Time   int64      `json:"time"`
@@ -53,4 +55,9 @@ func (c *Control) Close() {
 	default:
 		close(c.Controller)
 	}
+}
+
+func (c *Control) Wait() {
+	<- c.Controller
+	<-time.NewTimer(6).C
 }

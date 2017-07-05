@@ -5,16 +5,14 @@ import (
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/devices/fridge"
-	"sync"
 	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
-	var Wg sync.WaitGroup
 
 	collectData := models.CollectFridgeData{
-		CTop: make(chan models.FridgeGenerData, 100), // First Cam
-		CBot: make(chan models.FridgeGenerData, 100), // Second Cam
+		CTop: make(chan models.FridgeGenerData, 100), // First Camera
+		CBot: make(chan models.FridgeGenerData, 100), // Second Camera
 		ReqChan: make(chan models.Request),
 	}
 
@@ -26,17 +24,15 @@ func main() {
 
 	conf := config.NewConfig()
 	defer func() {
-		if r := recover(); r != nil {
-		}
-	} ()
+		if r := recover(); r != nil {}} ()
 
 	control := &models.Control{make(chan struct{})}
-	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, &Wg, control)
+	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control)
 
-	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, &Wg, control)
-	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, &Wg, control)
-	go fridge.DataTransfer(conf, collectData.ReqChan, &Wg, control)
+	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, control)
+	go fridge.RunDataCollector(conf, collectData.CBot, collectData.CTop, collectData.ReqChan, control)
+	go fridge.DataTransfer(conf, collectData.ReqChan, control)
 
-	Wg.Wait()
+	control.Wait()
 	log.Info("DONE")
 }

@@ -4,14 +4,12 @@ import (
 	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/models"
-	"sync"
 	log "github.com/Sirupsen/logrus"
 )
 
 //DataTransfer func sends request as JSON to the centre
-func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *sync.WaitGroup, c *models.Control) {
+func DataTransfer(config *config.DevConfig, reqChan chan models.Request, c *models.Control) {
 
-	wg.Add(1)
 	// for data transfer
 	transferConnParams := models.TransferConnParams{
 		// HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),
@@ -35,7 +33,6 @@ func DataTransfer(config *config.DevConfig, reqChan chan models.Request, wg *syn
 				connectionupdate.Send(r, conn)
 			}()
 		case <- c.Controller:
-			wg.Done()
 			log.Error("Data Transfer Failed")
 			return
 		}
