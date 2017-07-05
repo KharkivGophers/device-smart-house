@@ -75,8 +75,8 @@ func (dc *DevConfig) Init(connType string, host string, port string, c *models.C
 		log.Error("Can't connect to the server: " + host + ":" + port)
 		panic("No center found!")
 	}
+	dc.updateConfig(connectionconfig.InputConfig(conn))
 
-	dc.updateConfig(connectionconfig.AskConfig(conn))
 	go func() {
 		for {
 			defer func() {
