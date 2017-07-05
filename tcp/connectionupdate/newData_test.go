@@ -8,6 +8,7 @@ import (
 	"os"
 	"encoding/json"
 	"github.com/KharkivGophers/device-smart-house/models"
+	log "github.com/Sirupsen/logrus"
 )
 
 func TestGetDial(t *testing.T) {
@@ -44,6 +45,11 @@ func TestSend(t *testing.T) {
 
 	resp = models.Response{Descr: "Struct has been received"}
 	Convey("Send should send JSON to the server", t, func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error(r)
+			}
+		} ()
 		go Send(exReq, client) // request counter is missing
 
 		json.NewDecoder(server).Decode(&req)
@@ -55,4 +61,3 @@ func TestSend(t *testing.T) {
 		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
 	})
 }
-

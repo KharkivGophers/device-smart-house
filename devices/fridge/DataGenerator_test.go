@@ -2,7 +2,6 @@ package fridge
 
 import (
 	"testing"
-	"sync"
 	"time"
 	"reflect"
 	"github.com/KharkivGophers/device-smart-house/models"
@@ -11,14 +10,12 @@ import (
 )
 
 func TestDataGenerator(t *testing.T) {
-	var wg sync.WaitGroup
 	ticker := time.NewTicker(time.Millisecond)
 	top := make(chan models.FridgeGenerData)
 	bot := make(chan models.FridgeGenerData)
 	stopInner := make(chan struct{})
 
 	Convey("DataGenerator should produce structs with data", t, func() {
-		wg.Add(1)
 		var fromTop, fromBot models.FridgeGenerData
 		var okTop, okBot bool
 

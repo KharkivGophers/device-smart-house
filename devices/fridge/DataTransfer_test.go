@@ -10,6 +10,7 @@ import (
 	"github.com/KharkivGophers/device-smart-house/models"
 	"net"
 	. "github.com/smartystreets/goconvey/convey"
+	log "github.com/Sirupsen/logrus"
 )
 
 //how to change conn configs?
@@ -48,7 +49,8 @@ func TestDataTransfer(t *testing.T) {
 	Convey("DataTransfer should receive req from chan and transfer it to the server", t, func() {
 		ln, err := net.Listen(connTypeOut, hostOut+":"+portOut)
 		if err != nil {
-			t.Fail()
+			//t.Fail()
+			panic("DataTransfer() Listen: error")
 		}
 
 		control := &models.Control{make(chan struct{})}
@@ -56,16 +58,26 @@ func TestDataTransfer(t *testing.T) {
 			defer ln.Close()
 			server, err := ln.Accept()
 			if err != nil {
-				t.Fail()
+				//t.Fail()
+				panic("DataTransfer() Accept: invalid connection")
 			}
 			err = json.NewDecoder(server).Decode(&req)
 			if err != nil {
-				t.Fail()
+				//t.Fail()
+				panic("DataTransfer() Decode: invalid data to decode")
 			}
 		}()
+
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error(r)
+			}
+		} ()
 		go DataTransfer(testConfig, ch, control)
 
 		ch <- exReq
+
+		// TODO Ask Viktor what the following code means
 		//need to refactor DataTransfer (can't wait for it)
 		time.Sleep(time.Millisecond * 10)
 		b := reflect.DeepEqual(req.Data, exReq.Data)

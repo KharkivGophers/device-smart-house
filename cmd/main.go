@@ -23,10 +23,10 @@ func main() {
 	}
 
 	conf := config.NewConfig()
+	control := &models.Control{make(chan struct{})}
 	defer func() {
 		if r := recover(); r != nil {}} ()
 
-	control := &models.Control{make(chan struct{})}
 	conf.Init(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control)
 
 	go fridge.RunDataGenerator(conf, collectData.CBot, collectData.CTop, control)
