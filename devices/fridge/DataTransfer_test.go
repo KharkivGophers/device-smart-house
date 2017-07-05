@@ -10,7 +10,6 @@ import (
 	"github.com/KharkivGophers/device-smart-house/models"
 	"net"
 	. "github.com/smartystreets/goconvey/convey"
-	"sync"
 )
 
 //how to change conn configs?
@@ -51,7 +50,7 @@ func TestDataTransfer(t *testing.T) {
 		if err != nil {
 			t.Fail()
 		}
-		var Wg sync.WaitGroup
+
 		control := &models.Control{make(chan struct{})}
 		go func() {
 			defer ln.Close()
@@ -64,7 +63,7 @@ func TestDataTransfer(t *testing.T) {
 				t.Fail()
 			}
 		}()
-		go DataTransfer(testConfig, ch, &Wg, control)
+		go DataTransfer(testConfig, ch, control)
 
 		ch <- exReq
 		//need to refactor DataTransfer (can't wait for it)

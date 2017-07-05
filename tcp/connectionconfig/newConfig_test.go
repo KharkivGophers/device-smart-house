@@ -1,14 +1,6 @@
 package connectionconfig
 
-import (
-	"net"
-	"testing"
-	"time"
-	. "github.com/smartystreets/goconvey/convey"
-	"os"
-	"encoding/json"
-	"github.com/KharkivGophers/device-smart-house/models"
-)
+import "testing"
 
 func TestAskConfig(t *testing.T) {
 

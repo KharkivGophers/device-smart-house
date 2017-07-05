@@ -6,13 +6,11 @@ import (
 	"reflect"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"testing"
-	"sync"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestDataCollector(t *testing.T) {
 	maskOsArgs()
-	var wg sync.WaitGroup
 	var req models.Request
 	ticker := time.NewTicker(time.Millisecond)
 	top := make(chan models.FridgeGenerData)
@@ -40,7 +38,7 @@ func TestDataCollector(t *testing.T) {
 
 	Convey("DataGenerator should produce structs with data", t, func() {
 
-		go DataCollector(ticker, bot, top, reqChan, stopInner, &wg)
+		go DataCollector(ticker, bot, top, reqChan, stopInner)
 		top <- models.FridgeGenerData{Data: 1.01}
 		bot <- models.FridgeGenerData{Data: 10.01}
 
