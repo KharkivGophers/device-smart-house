@@ -1,16 +1,15 @@
-package config
+package fridgeconfig
 
 import (
-	"encoding/json"
-	"net"
-	"sync"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/error"
-	"github.com/KharkivGophers/device-smart-house/tcp/connectionconfig"
+	"encoding/json"
 	log "github.com/Sirupsen/logrus"
+	"sync"
+	"net"
 )
 
-type DevConfig struct {
+type DevFridgeConfig struct {
 	sync.Mutex
 	turned      bool
 	collectFreq int64
@@ -18,21 +17,21 @@ type DevConfig struct {
 	subsPool    map[string]chan struct{}
 }
 
-func (d *DevConfig) AddSubIntoPool(key string, value chan struct{}) {
+func (d *DevFridgeConfig) AddSubIntoPool(key string, value chan struct{}) {
 	d.Mutex.Lock()
 	d.subsPool[key] = value
 	d.Mutex.Unlock()
 }
 
-func (d *DevConfig) RemoveSubFromPool(key string) {
+func (d *DevFridgeConfig) RemoveSubFromPool(key string) {
 	d.Mutex.Lock()
 	delete(d.subsPool, key)
 	d.Mutex.Unlock()
 }
 
-func listenConfig(devConfig *DevConfig, conn net.Conn) {
+func listenConfig(devConfig *DevFridgeConfig, conn net.Conn) {
 	var resp models.Response
-	var config models.Config
+	var config models.FridgeConfig
 
 	err := json.NewDecoder(conn).Decode(&config)
 	if err != nil {
@@ -48,13 +47,13 @@ func listenConfig(devConfig *DevConfig, conn net.Conn) {
 	error.CheckError("listenConfig(): Encode JSON", err)
 }
 
-func publishConfig(d *DevConfig) {
+func publishConfig(d *DevFridgeConfig) {
 	for _, v := range d.subsPool {
 		v <- struct{}{}
 	}
 }
 
-func (d *DevConfig) updateConfig(c models.Config) {
+func (d *DevFridgeConfig) updateConfig(c models.FridgeConfig) {
 	d.turned = c.TurnedOn
 	d.sendFreq = c.SendFreq
 	log.Warningln("SendFreq: ", d.sendFreq)
@@ -69,14 +68,37 @@ func (d *DevConfig) updateConfig(c models.Config) {
 	}
 }
 
-func (dc *DevConfig) Init(connType string, host string, port string, c *models.Control) {
+func (fridge *DevFridgeConfig) RequestFridgeConfig(connType string, host string, port string, c *models.Control, args []string) {
+
 	conn, err := net.Dial(connType, host+":"+port)
 	for err != nil {
 		log.Error("Can't connect to the server: " + host + ":" + port)
 		panic("No center found!")
 	}
 
-	dc.updateConfig(connectionconfig.AskConfig(conn))
+	var response models.FridgeConfig
+	var request models.FridgeRequest
+
+	request = models.FridgeRequest{
+		Action: "config",
+		Meta: models.Metadata{
+			Type: args[0],
+			Name: args[1],
+			MAC:  args[2]},
+	}
+
+	err = json.NewEncoder(conn).Encode(request)
+	error.CheckError("askConfig(): Encode JSON", err)
+
+	err = json.NewDecoder(conn).Decode(&response)
+	error.CheckError("askConfig(): Decode JSON", err)
+
+	if err != nil && response.IsEmpty() {
+		panic("Connection has been closed by center")
+	}
+
+	fridge.updateConfig(response)
+
 	go func() {
 		for {
 			defer func() {
@@ -85,7 +107,7 @@ func (dc *DevConfig) Init(connType string, host string, port string, c *models.C
 					log.Error("Initialization Failed")
 				}
 			} ()
-			listenConfig(dc, conn)
+			listenConfig(fridge, conn)
 		}
 	}()
 }

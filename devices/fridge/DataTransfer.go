@@ -1,14 +1,14 @@
 package fridge
 
 import (
-	"github.com/KharkivGophers/device-smart-house/config"
+	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	"github.com/KharkivGophers/device-smart-house/models"
 	log "github.com/Sirupsen/logrus"
 )
 
 //DataTransfer func sends request as JSON to the centre
-func DataTransfer(config *config.DevConfig, reqChan chan models.Request, c *models.Control) {
+func DataTransfer(config *fridgeconfig.DevFridgeConfig, reqChan chan models.FridgeRequest, c *models.Control) {
 
 	// for data transfer
 	transferConnParams := models.TransferConnParams{

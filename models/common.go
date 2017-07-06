@@ -2,31 +2,10 @@ package models
 
 import "time"
 
-type Request struct {
-	Action string     `json:"action"`
-	Time   int64      `json:"time"`
-	Meta   Metadata   `json:"meta"`
-	Data   FridgeData `json:"data"`
-}
-
 type Metadata struct {
 	Type string `json:"type"`
 	Name string `json:"name"`
 	MAC  string `json:"mac"`
-}
-
-type Config struct {
-	TurnedOn    bool   `json:"turnedOn"`
-	CollectFreq int64  `json:"collectFreq"`
-	SendFreq    int64  `json:"sendFreq"`
-	MAC         string `json:"mac"`
-}
-
-func (c Config) IsEmpty() bool {
-	if c.CollectFreq == 0 && c.SendFreq == 0 && c.MAC == "" && c.TurnedOn == false {
-		return true
-	}
-	return false
 }
 
 type ConfigConnParams struct {

@@ -3,15 +3,15 @@ package fridge
 import (
 	"time"
 	log "github.com/Sirupsen/logrus"
-	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"os"
+	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
 )
 
 //DataCollector gathers data from DataGenerator
 //and sends completed request's structures to the ReqChan channel
 func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop <-chan models.FridgeGenerData,
-	ReqChan chan models.Request, stopInner chan struct{}) {
+	ReqChan chan models.FridgeRequest, stopInner chan struct{}) {
 	var mTop = make(map[int64]float32)
 	var mBot = make(map[int64]float32)
 
@@ -36,8 +36,8 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 }
 
 //RunDataCollector setups DataCollector
-func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerData,
-	cTop <-chan models.FridgeGenerData, ReqChan chan models.Request, c *models.Control) {
+func RunDataCollector(config *fridgeconfig.DevFridgeConfig, cBot <-chan models.FridgeGenerData,
+	cTop <-chan models.FridgeGenerData, ReqChan chan models.FridgeRequest, c *models.Control) {
 
 	duration := config.GetSendFreq()
 	stopInner := make(chan struct{})
@@ -86,14 +86,14 @@ func RunDataCollector(config *config.DevConfig, cBot <-chan models.FridgeGenerDa
 	}
 }
 
-func constructReq(mTop map[int64]float32, mBot map[int64]float32) models.Request {
+func constructReq(mTop map[int64]float32, mBot map[int64]float32) models.FridgeRequest {
 	var fridgeData models.FridgeData
 	args := os.Args[1:]
 
 	fridgeData.TempCam2 = mBot
 	fridgeData.TempCam1 = mTop
 
-	req := models.Request{
+	req := models.FridgeRequest{
 		Action: "update",
 		Time:   time.Now().UnixNano(),
 		Meta: models.Metadata{

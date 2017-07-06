@@ -11,11 +11,11 @@ import (
 
 func TestDataCollector(t *testing.T) {
 	maskOsArgs()
-	var req models.Request
+	var req models.FridgeRequest
 	ticker := time.NewTicker(time.Millisecond)
 	top := make(chan models.FridgeGenerData)
 	bot := make(chan models.FridgeGenerData)
-	reqChan := make(chan models.Request)
+	reqChan := make(chan models.FridgeRequest)
 	stopInner := make(chan struct{})
 
 	botMap := make(map[int64]float32)
@@ -25,7 +25,7 @@ func TestDataCollector(t *testing.T) {
 
 	botMap[0] = 10.01
 
-	exReq := models.Request{
+	exReq := models.FridgeRequest{
 		Action: "update",
 		Meta: models.Metadata{
 			Type: os.Args[1],
@@ -56,8 +56,8 @@ func TestDataCollector(t *testing.T) {
 }
 
 func TestConstructReq(t *testing.T) {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
-	var exReq models.Request
+	os.Args = []string{"cmd", "fridgeconfig", "LG", "00-00-00-00-00-00"}
+	var exReq models.FridgeRequest
 	bot := make(map[int64]float32)
 	top := make(map[int64]float32)
 
@@ -69,7 +69,7 @@ func TestConstructReq(t *testing.T) {
 	top[2] = 20.01
 	top[3] = 30.01
 
-	exReq = models.Request{
+	exReq = models.FridgeRequest{
 		Action: "update",
 		Meta: models.Metadata{
 			Type: os.Args[1],
@@ -90,6 +90,6 @@ func TestConstructReq(t *testing.T) {
 }
 
 func maskOsArgs() {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
+	os.Args = []string{"cmd", "fridgeconfig", "LG", "00-00-00-00-00-00"}
 }
 

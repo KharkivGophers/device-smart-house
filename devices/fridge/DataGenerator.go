@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"time"
 	log "github.com/Sirupsen/logrus"
-	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
+	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
 )
 
 //DataGenerator generates pseudo-random data that represents devices's behavior
@@ -26,7 +26,7 @@ func DataGenerator(ticker *time.Ticker, cBot chan<- models.FridgeGenerData, cTop
 }
 
 //RunDataGenerator setups DataGenerator
-func RunDataGenerator(config *config.DevConfig, cBot chan<- models.FridgeGenerData,
+func RunDataGenerator(config *fridgeconfig.DevFridgeConfig, cBot chan<- models.FridgeGenerData,
 	cTop chan<- models.FridgeGenerData, c *models.Control) {
 
 	duration := config.GetCollectFreq()

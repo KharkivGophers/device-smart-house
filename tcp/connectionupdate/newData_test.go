@@ -27,15 +27,15 @@ func TestGetDial(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
-	var req models.Request
+	os.Args = []string{"cmd", "fridgeconfig", "LG", "00-00-00-00-00-00"}
+	var req models.FridgeRequest
 	var resp models.Response
 
 	client, server := net.Pipe()
 	defer client.Close()
 	defer server.Close()
 
-	exReq := models.Request{
+	exReq := models.FridgeRequest{
 		Action: "update",
 		Meta: models.Metadata{
 			Type: os.Args[1],

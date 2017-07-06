@@ -36,7 +36,7 @@ func GetDial(connType string, host string, port string) net.Conn {
 	return conn
 }
 
-func Send(r models.Request, conn net.Conn) {
+func Send(r models.FridgeRequest, conn net.Conn) {
 	var resp models.Response
 	r.Time = time.Now().UnixNano()
 

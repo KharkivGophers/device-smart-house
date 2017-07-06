@@ -9,16 +9,16 @@ import (
 	"encoding/json"
 )
 
-func AskConfig(conn net.Conn) models.Config {
+func AskConfig(conn net.Conn) models.FridgeConfig {
 	args := os.Args[1:]
 	log.Warningln("Type:"+"["+args[0]+"];", "Name:"+"["+args[1]+"];", "MAC:"+"["+args[2]+"]")
 	if len(args) < 3 {
 		panic("Incorrect devices's information")
 	}
 
-	var req models.Request
-	var resp models.Config
-	req = models.Request{
+	var req models.FridgeRequest
+	var resp models.FridgeConfig
+	req = models.FridgeRequest{
 		Action: "config",
 		Meta: models.Metadata{
 			Type: args[0],

@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"testing"
 	"os"
-	"github.com/KharkivGophers/device-smart-house/config"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"net"
 	. "github.com/smartystreets/goconvey/convey"
 	log "github.com/Sirupsen/logrus"
+	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
 )
 
 //how to change conn configs?
@@ -31,8 +31,8 @@ func TestDataTransfer(t *testing.T) {
 	top[2] = 20.01
 	top[3] = 30.01
 
-	var req models.Request
-	exReq := models.Request{
+	var req models.FridgeRequest
+	exReq := models.FridgeRequest{
 		Action: "update",
 		Meta: models.Metadata{
 			Type: os.Args[1],
@@ -43,8 +43,8 @@ func TestDataTransfer(t *testing.T) {
 			TempCam2: bot},
 	}
 
-	testConfig := config.NewConfig()
-	ch := make(chan models.Request)
+	testConfig := fridgeconfig.NewFridgeConfig()
+	ch := make(chan models.FridgeRequest)
 
 	Convey("DataTransfer should receive req from chan and transfer it to the server", t, func() {
 		ln, err := net.Listen(connTypeOut, hostOut+":"+portOut)

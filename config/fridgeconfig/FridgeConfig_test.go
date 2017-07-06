@@ -1,4 +1,4 @@
-package config
+package fridgeconfig
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ func TestAddSubIntoPool(t *testing.T) {
 	key := "19-29"
 
 	Convey("AddSubIntoPool should add chan into the pool", t, func() {
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 		testConfig.AddSubIntoPool(key, ch)
 		So(testConfig.subsPool[key], ShouldEqual, ch)
 	})
@@ -26,7 +26,7 @@ func TestRemoveSubFromPool(t *testing.T) {
 	key := "19-29"
 
 	Convey("RemoveSubFromPool should remove chan from the pool", t, func() {
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 		testConfig.AddSubIntoPool(key, ch)
 
 		testConfig.RemoveSubFromPool(key)
@@ -37,13 +37,13 @@ func TestRemoveSubFromPool(t *testing.T) {
 func TestUpdateConfig(t *testing.T) {
 	maskOsArgs()
 
-	exCfg := models.Config{
+	exCfg := models.FridgeConfig{
 		TurnedOn:    true,
 		SendFreq:    100,
 		CollectFreq: 50}
 
 	Convey("UpdateConfig should update struct by new struct's values", t, func() {
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 		testConfig.updateConfig(exCfg)
 		So(testConfig.GetTurned(), ShouldEqual, exCfg.TurnedOn)
 		So(testConfig.GetCollectFreq(), ShouldEqual, exCfg.CollectFreq)
@@ -55,7 +55,7 @@ func TestUpdateConfig(t *testing.T) {
 func TestListenConfig(t *testing.T) {
 	maskOsArgs()
 
-	cfg := models.Config{
+	cfg := models.FridgeConfig{
 		TurnedOn:    true,
 		CollectFreq: 1000,
 		SendFreq:    5000}
@@ -86,7 +86,7 @@ func TestListenConfig(t *testing.T) {
 			//t.Fail()
 			panic("ListenConfig() Dial: invalid address!")
 		}
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 
 		defer func() {
 			if r := recover(); r != nil {
@@ -103,7 +103,7 @@ func TestListenConfig(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	maskOsArgs()
-	devCfg := models.Config{
+	devCfg := models.FridgeConfig{
 		TurnedOn:    true,
 		CollectFreq: 1000,
 		SendFreq:    5000}
@@ -128,13 +128,13 @@ func TestInit(t *testing.T) {
 				panic("Init() Encode: invalid data to encode!")
 			}
 		}()
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 
 		defer func() {
 			if r := recover(); r != nil {
 				log.Error(r)
 			}} ()
-		testConfig.Init(connTypeConf, hostConf, portConf, control)
+		testConfig.RequestFridgeConfig(connTypeConf, hostConf, portConf, control, maskOsArgs())
 
 		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
 		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
@@ -142,8 +142,9 @@ func TestInit(t *testing.T) {
 	})
 }
 
-func maskOsArgs() {
-	os.Args = []string{"cmd", "fridge", "LG", "00-00-00-00-00-00"}
+func maskOsArgs() []string {
+	os.Args = []string{"cmd", "fridgeconfig", "LG", "00-00-00-00-00-00"}
+	return os.Args
 }
 
 // func TestPublishConfig(t *testing.T) {

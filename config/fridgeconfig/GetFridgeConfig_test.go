@@ -1,4 +1,4 @@
-package config
+package fridgeconfig
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 func TestGetTurned(t *testing.T) {
 
 	Convey("Should get valid value", t, func() {
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 		testConfig.SetTurned(false)
 		So(testConfig.GetTurned(), ShouldEqual, false)
 	})
@@ -17,7 +17,7 @@ func TestGetTurned(t *testing.T) {
 func TestGetCollectFreq(t *testing.T) {
 
 	Convey("Should get valid value", t, func() {
-		testConfig := NewConfig()
+		testConfig := NewFridgeConfig()
 		testConfig.SetCollectFreq(1000)
 		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
 	})
@@ -25,7 +25,7 @@ func TestGetCollectFreq(t *testing.T) {
 
 
 func TestGetSendFreq(t *testing.T) {
-	testConfig := NewConfig()
+	testConfig := NewFridgeConfig()
 	Convey("Should get valid value", t, func() {
 		testConfig.SetSendFreq(1000)
 		So(testConfig.GetSendFreq(), ShouldEqual, 1000)
