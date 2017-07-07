@@ -1,10 +1,12 @@
 FROM golang
 MAINTAINER Kharkiv Gophers (kostyamol@gmail.com)
 
-COPY . /go/src/github.com/KharkivGophers/device-smart-house
-WORKDIR /go/src/github.com/KharkivGophers/device-smart-house/cmd
+WORKDIR /home
+COPY ./cmd/device-smart-house .
 
-RUN go get ./
-RUN go build -o device-smart-house
-
-#CMD device-smart-house
+RUN \  
+ chown daemon device-smart-house && \
+ chmod +x device-smart-house
+  
+USER daemon
+ENTRYPOINT ./device-smart-house
