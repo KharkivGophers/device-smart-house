@@ -9,4 +9,5 @@ RUN \
  chmod +x device-smart-house
   
 USER daemon
-ENTRYPOINT ./device-smart-house
+ENTRYPOINT ["./device-smart-house"]
+CMD ["type", "name", "mac"]
