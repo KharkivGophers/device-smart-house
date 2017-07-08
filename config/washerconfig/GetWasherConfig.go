@@ -1,5 +1,6 @@
 package washerconfig
 
+
 func NewWasherConfig() *DevWasherConfig {
 	conf := &DevWasherConfig{}
 	conf.subsPool = make(map[string]chan struct{})
@@ -7,10 +8,10 @@ func NewWasherConfig() *DevWasherConfig {
 	return conf
 }
 
-func (d *DevWasherConfig) GetTurned() bool {
+func (d *DevWasherConfig) GetTemperature() float32 {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
-	return d.TurnedOn
+	return d.Temperature
 }
 
 func (d *DevWasherConfig) GetWashTime() int64 {

@@ -9,7 +9,7 @@ type WasherRequest struct {
 
 type WasherConfig struct {
 	MAC				string	`json:"mac"`
-	TurnedOn    	bool	`json:"turnedOn"`
+	Temperature		float32 `json:"temperature"`
 	WashTime		int64	`json:"washTime"`
 	WashTurnovers 	int64	`json:"washTurnovers"`
 	RinseTime		int64	`json:"rinseTime"`
@@ -19,7 +19,7 @@ type WasherConfig struct {
 }
 
 func (washer WasherConfig) IsEmpty() bool {
-	if washer.WashTime == 0 && washer.WashTurnovers == 0 && washer.MAC == "" && washer.TurnedOn == false {
+	if washer.WashTime == 0 && washer.WashTurnovers == 0 {
 		return true
 	}
 	return false
@@ -32,8 +32,8 @@ type WasherData struct {
 
 type GenerateWasherData struct {
 	Time int64
-	TurnoversData int64
-	WaterTempData float32
+	Turnovers int64
+	WaterTemp float32
 }
 
 type CollectWasherData struct {

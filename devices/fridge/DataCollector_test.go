@@ -46,9 +46,6 @@ func TestDataCollector(t *testing.T) {
 
 		req = <-reqChan
 
-		// TODO Ask Viktor what the following comments mean
-		//we have to refactor DataCollector: need to control WG
-		// close(stopInner)
 		//Compare struct's data
 		b := reflect.DeepEqual(req.Data, exReq.Data)
 		So(b, ShouldEqual, true)

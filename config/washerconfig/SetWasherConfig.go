@@ -1,16 +1,15 @@
 package washerconfig
 
-func (d *DevWasherConfig) SetTurned(b bool) {
+func (d *DevWasherConfig) SetTemperature(b float32) {
 	d.Mutex.Lock()
-	d.TurnedOn = b
-	defer d.Mutex.Unlock()
+	d.Temperature = b
+	d.Mutex.Unlock()
 }
 
 func (d *DevWasherConfig) SetWashTime(b int64) {
 	d.Mutex.Lock()
 	d.WashTime = b
 	d.Mutex.Unlock()
-
 }
 
 func (d *DevWasherConfig) SetWashTurnovers(b int64) {

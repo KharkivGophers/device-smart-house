@@ -77,8 +77,6 @@ func TestDataTransfer(t *testing.T) {
 
 		ch <- exReq
 
-		// TODO Ask Viktor what the following code means
-		//need to refactor DataTransfer (can't wait for it)
 		time.Sleep(time.Millisecond * 10)
 		b := reflect.DeepEqual(req.Data, exReq.Data)
 		So(req.Action, ShouldEqual, exReq.Action)

@@ -70,7 +70,6 @@ func RunDataGenerator(config *fridgeconfig.DevFridgeConfig, cBot chan<- models.F
 				}
 			}
 		case <- c.Controller:
-			//wg.Done()
 			log.Error("Data Generator Failed")
 			return
 		}

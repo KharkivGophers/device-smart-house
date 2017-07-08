@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"sync"
 	"net"
+	"time"
 )
 
 type DevWasherConfig struct {
 	sync.Mutex
-	TurnedOn    	bool
+	Temperature		float32
 	WashTime		int64
 	WashTurnovers 	int64
 	RinseTime		int64
@@ -58,9 +59,6 @@ func publishWasherConfig(d *DevWasherConfig) {
 }
 
 func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
-	d.TurnedOn = c.TurnedOn
-	log.Warningln("TurnedOn: ", d.TurnedOn)
-
 	d.WashTime = c.WashTime
 	log.Warningln("WashTime: ", d.WashTime)
 
@@ -78,23 +76,9 @@ func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
 
 	d.SpinTurnovers = c.SpinTurnovers
 	log.Warningln("SpinTurnovers: ", d.SpinTurnovers)
-
-	switch d.TurnedOn {
-	case false:
-		log.Warningln("ON PAUSE")
-	case true:
-		log.Warningln("WORKING")
-	}
 }
 
-func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string, port string, c *models.Control, args []string) {
-
-	conn, err := net.Dial(connType, host+":"+port)
-	for err != nil {
-		log.Error("Can't connect to the server: " + host + ":" + port)
-		panic("No center found!")
-	}
-
+func (washer *DevWasherConfig) RequestWasherConfig(conn net.Conn, args []string) models.WasherConfig {
 	var response models.WasherConfig
 	var request models.WasherRequest
 
@@ -106,27 +90,45 @@ func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string,
 			MAC:  args[2]},
 	}
 
-	err = json.NewEncoder(conn).Encode(request)
+	err := json.NewEncoder(conn).Encode(request)
 	error.CheckError("askConfig(): Encode JSON", err)
 
-	err = json.NewDecoder(conn).Decode(&response)
-	error.CheckError("askConfig(): Decode JSON", err)
-
-	if err != nil && response.IsEmpty() {
-		panic("Connection has been closed by center")
+	response = models.WasherConfig{
+		WashTime: 10,
+		WashTurnovers: 3,
+		RinseTime: 10,
+		RinseTurnovers: 3,
+		SpinTime: 10,
+		SpinTurnovers: 3,
 	}
+	//err = json.NewDecoder(conn).Decode(&response)
+	//error.CheckError("askConfig(): Decode JSON", err)
 
-	washer.updateWasherConfig(response)
+	return response
+}
 
-	go func() {
-		for {
-			defer func() {
-				if r := recover(); r != nil {
-					c.Close()
-					log.Error("Initialization Failed")
-				}
-			} ()
-			listenWasherConfig(washer, conn)
+func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, port string, c *models.Control, args []string) {
+	conn, err := net.Dial(connType, host+":"+port)
+	for err != nil {
+		log.Error("Can't connect to the server: " + host + ":" + port)
+		panic("No center found!")
+	}
+	ticker := time.NewTicker(time.Second)
+	requestCounter := 0
+	for {
+		select {
+		case <- ticker.C:
+			switch washer.RequestWasherConfig(conn, args).IsEmpty() {
+			case true:
+				go washer.RequestWasherConfig(conn, args)
+				requestCounter++
+				log.Println("Request", requestCounter, "was successfully sent")
+			default:
+				log.Println("Washer Config: ", washer.RequestWasherConfig(conn, args))
+				washer.updateWasherConfig(washer.RequestWasherConfig(conn, args))
+				ticker.Stop()
+				return
+			}
 		}
-	}()
+	}
 }

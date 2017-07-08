@@ -31,7 +31,6 @@ func DataCollector(ticker *time.Ticker, cBot <-chan models.FridgeGenerData, cTop
 			mTop = make(map[int64]float32)
 			mBot = make(map[int64]float32)
 		}
-
 	}
 }
 
@@ -46,7 +45,6 @@ func RunDataCollector(config *fridgeconfig.DevFridgeConfig, cBot <-chan models.F
 	configChanged := make(chan struct{})
 	config.AddSubIntoPool("DataCollector", configChanged)
 
-	//wg.Add(1)
 	if config.GetTurned() {
 		go DataCollector(ticker, cBot, cTop, ReqChan, stopInner)
 	}
