@@ -25,13 +25,16 @@ func DataCollector(ticker *time.Ticker, turnOversStorage <-chan models.GenerateW
 		case <-ticker.C:
 			log.Print("Data Collector is working")
 			RequestStorage <-constructReq(requestturnOversStorage, requestwaterTempStorage)
+
+			requestwaterTempStorage = make(map[int64]float32)
+			requestturnOversStorage = make(map[int64]int64)
 		}
 	}
 }
 
 //RunDataCollector setups DataCollector
 func RunDataCollector(config *washerconfig.DevWasherConfig, turnOversStorage <-chan models.GenerateWasherData,
-	waterTempStorage <-chan models.GenerateWasherData, RequestStorage chan models.WasherRequest, c *models.Control) {
+	waterTempStorage <-chan models.GenerateWasherData, RequestStorage chan models.WasherRequest) {
 	washTime := config.GetWashTime()
 	rinseTime := config.GetRinseTime()
 	spinTime := config.GetSpinTime()

@@ -1,25 +1,25 @@
 package washerconfig
 
 import (
-	"github.com/KharkivGophers/device-smart-house/models"
-	"github.com/KharkivGophers/device-smart-house/error"
-	log "github.com/Sirupsen/logrus"
 	"encoding/json"
-	"sync"
+	"github.com/KharkivGophers/device-smart-house/error"
+	"github.com/KharkivGophers/device-smart-house/models"
+	log "github.com/Sirupsen/logrus"
 	"net"
+	"sync"
 	"time"
 )
 
 type DevWasherConfig struct {
 	sync.Mutex
-	Temperature		int64
-	WashTime		int64
-	WashTurnovers 	int64
-	RinseTime		int64
-	RinseTurnovers	int64
-	SpinTime		int64
-	SpinTurnovers	int64
-	subsPool    map[string]chan struct{}
+	Temperature    int64
+	WashTime       int64
+	WashTurnovers  int64
+	RinseTime      int64
+	RinseTurnovers int64
+	SpinTime       int64
+	SpinTurnovers  int64
+	subsPool       map[string]chan struct{}
 }
 
 func (d *DevWasherConfig) AddSubIntoPool(key string, value chan struct{}) {
@@ -63,7 +63,13 @@ func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
 	log.Warning("SpinTurnovers: ", d.SpinTurnovers)
 }
 
-func (washer *DevWasherConfig) RequestWasherConfig(conn net.Conn, args []string) models.WasherConfig {
+func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string, port string, args []string) models.WasherConfig {
+	conn, err := net.Dial(connType, host+":"+port)
+	for err != nil {
+		log.Error("Can't connect to the server: " + host + ":" + port)
+		panic("No center found!")
+	}
+
 	var response models.WasherConfig
 	var request models.WasherRequest
 
@@ -75,45 +81,32 @@ func (washer *DevWasherConfig) RequestWasherConfig(conn net.Conn, args []string)
 			MAC:  args[2]},
 	}
 
-	err := json.NewEncoder(conn).Encode(request)
+	err = json.NewEncoder(conn).Encode(request)
 	error.CheckError("askConfig(): Encode JSON", err)
 
-	log.Warn("Request:", request)
+	log.Println("Request:", request)
 
-	response = models.WasherConfig{
-		Temperature: 30,
-		WashTime: 10,
-		WashTurnovers: 400,
-		RinseTime: 10,
-		RinseTurnovers: 500,
-		SpinTime: 10,
-		SpinTurnovers: 600,
-	}
-	//err = json.NewDecoder(conn).Decode(&response)
-	//error.CheckError("askConfig(): Decode JSON", err)
+	err = json.NewDecoder(conn).Decode(&response)
+	error.CheckError("askConfig(): Decode JSON", err)
 
 	return response
 }
 
 func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, port string, c *models.Control, args []string) {
-	conn, err := net.Dial(connType, host+":"+port)
-	for err != nil {
-		log.Error("Can't connect to the server: " + host + ":" + port)
-		panic("No center found!")
-	}
 	ticker := time.NewTicker(time.Second)
+	response := washer.RequestWasherConfig(connType, host, port, args)
+	log.Println("Response:", response)
+	timer := time.NewTimer(time.Second * time.Duration(response.SpinTime + response.WashTime + response.RinseTime))
 
-	requestCounter := 0
 	for {
 		select {
-		case <- ticker.C:
-			response := washer.RequestWasherConfig(conn, args)
-			log.Println("Response:", response)
+		case <-ticker.C:
 			switch response.IsEmpty() {
 			case true:
-				go washer.RequestWasherConfig(conn, args)
-				requestCounter++
-				log.Println("Request", requestCounter, "was successfully sent")
+				<-timer.C
+				ticker = time.NewTicker(time.Second)
+				log.Println("Response:", response)
+				washer.RequestWasherConfig(connType, host, port, args)
 			default:
 				washer.updateWasherConfig(response)
 				ticker.Stop()

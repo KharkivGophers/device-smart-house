@@ -38,7 +38,7 @@ func main() {
 		washerConfig.SendWasherRequests(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
 
 		go washer.RunDataGenerator(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, control)
-		go washer.RunDataCollector(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, collectWasherData.RequestStorage, control)
+		go washer.RunDataCollector(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, collectWasherData.RequestStorage)
 		go washer.DataTransfer(washerConfig, collectWasherData.RequestStorage, control)
 
 	default:

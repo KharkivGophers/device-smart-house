@@ -16,10 +16,7 @@ func DataGenerator(stage string, ticker *time.Ticker, maxTemperature int64, minT
 	for {
 		select {
 		case <-ticker.C:
-			log.Println(stage, "generating...")
-			log.Println(makeTimestamp(), "Temp:", rand.Float32()*float32(maxTemperature))
-			log.Println(makeTimestamp(), "Turnovers:" ,rand.Intn(int(maxTurnovers - minTurnovers)) + int(minTurnovers))
-			turnOversStorage <- models.GenerateWasherData{Time:makeTimestamp(), Turnovers: int64(rand.Intn(int(maxTurnovers - minTurnovers)) + int(minTurnovers))}
+			turnOversStorage <- models.GenerateWasherData{Time:makeTimestamp(), Turnovers: int64(rand.Intn(int(maxTurnovers)))}
 			waterTempStorage <- models.GenerateWasherData{Time:makeTimestamp(), WaterTemp: rand.Float32()*float32(maxTemperature)}
 		}
 	}
@@ -64,6 +61,7 @@ func RunDataGenerator(config *washerconfig.DevWasherConfig, turnOversStorage cha
 	<-timer.C
 	ticker.Stop()
 	log.Println(stageSpin ,"finished!")
+
 }
 
 func makeTimestamp() int64 {
