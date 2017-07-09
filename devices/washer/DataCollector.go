@@ -5,6 +5,7 @@ import (
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/config/washerconfig"
 	"os"
+	"log"
 )
 
 //DataCollector gathers data from DataGenerator
@@ -15,7 +16,6 @@ func DataCollector(ticker *time.Ticker, turnOversStorage <-chan models.GenerateW
 	var requestturnOversStorage = make(map[int64]int64)
 	var requestwaterTempStorage = make(map[int64]float32)
 
-
 	for {
 		select {
 		case tv := <-waterTempStorage:
@@ -23,6 +23,7 @@ func DataCollector(ticker *time.Ticker, turnOversStorage <-chan models.GenerateW
 		case bv := <-turnOversStorage:
 			requestturnOversStorage[bv.Time] = bv.Turnovers
 		case <-ticker.C:
+			log.Print("Data Collector is working")
 			RequestStorage <-constructReq(requestturnOversStorage, requestwaterTempStorage)
 		}
 	}
@@ -31,10 +32,16 @@ func DataCollector(ticker *time.Ticker, turnOversStorage <-chan models.GenerateW
 //RunDataCollector setups DataCollector
 func RunDataCollector(config *washerconfig.DevWasherConfig, turnOversStorage <-chan models.GenerateWasherData,
 	waterTempStorage <-chan models.GenerateWasherData, RequestStorage chan models.WasherRequest, c *models.Control) {
+	washTime := config.GetWashTime()
+	rinseTime := config.GetRinseTime()
+	spinTime := config.GetSpinTime()
+	ticker := time.NewTicker(time.Second * 5)
 
-	ticker := time.NewTicker(time.Second * 4)
+	timer := time.NewTimer(time.Second * time.Duration(washTime + rinseTime + spinTime))
 	go DataCollector(ticker, turnOversStorage, waterTempStorage, RequestStorage)
-
+	<-timer.C
+	ticker.Stop()
+	log.Println("Washing Machine finished!")
 }
 
 func constructReq(turnOversStorage map[int64]int64, waterTempStorage map[int64]float32) models.WasherRequest {

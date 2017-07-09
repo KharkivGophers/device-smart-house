@@ -1,6 +1,6 @@
 package washerconfig
 
-func (d *DevWasherConfig) SetTemperature(b float32) {
+func (d *DevWasherConfig) SetTemperature(b int64) {
 	d.Mutex.Lock()
 	d.Temperature = b
 	d.Mutex.Unlock()

@@ -9,7 +9,7 @@ type WasherRequest struct {
 
 type WasherConfig struct {
 	MAC				string	`json:"mac"`
-	Temperature		float32 `json:"temperature"`
+	Temperature		int64 	`json:"temperature"`
 	WashTime		int64	`json:"washTime"`
 	WashTurnovers 	int64	`json:"washTurnovers"`
 	RinseTime		int64	`json:"rinseTime"`

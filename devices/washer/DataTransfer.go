@@ -56,7 +56,6 @@ func Send(r models.WasherRequest, conn net.Conn) {
 		panic("No response found")
 	}
 
-	log.Println("Request: ", r)
 	log.Infoln("Request:")
 	log.Infoln("send(): Response from center: ", resp)
 }

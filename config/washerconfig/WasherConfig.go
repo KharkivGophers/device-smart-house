@@ -12,7 +12,7 @@ import (
 
 type DevWasherConfig struct {
 	sync.Mutex
-	Temperature		float32
+	Temperature		int64
 	WashTime		int64
 	WashTurnovers 	int64
 	RinseTime		int64
@@ -34,24 +34,6 @@ func (d *DevWasherConfig) RemoveSubFromPool(key string) {
 	d.Mutex.Unlock()
 }
 
-func listenWasherConfig(devConfig *DevWasherConfig, conn net.Conn) {
-	var resp models.Response
-	var config models.WasherConfig
-
-	err := json.NewDecoder(conn).Decode(&config)
-	if err != nil {
-		panic("No config found!")
-	}
-	error.CheckError("listenConfig(): Decode JSON", err)
-
-	resp.Descr = "Config have been received"
-	devConfig.updateWasherConfig(config)
-	go publishWasherConfig(devConfig)
-
-	err = json.NewEncoder(conn).Encode(&resp)
-	error.CheckError("listenConfig(): Encode JSON", err)
-}
-
 func publishWasherConfig(d *DevWasherConfig) {
 	for _, v := range d.subsPool {
 		v <- struct{}{}
@@ -59,23 +41,26 @@ func publishWasherConfig(d *DevWasherConfig) {
 }
 
 func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
+	d.Temperature = c.Temperature
+	log.Warning("Temperature: ", d.Temperature)
+
 	d.WashTime = c.WashTime
-	log.Warningln("WashTime: ", d.WashTime)
+	log.Warning("WashTime: ", d.WashTime)
 
 	d.WashTurnovers = c.WashTurnovers
-	log.Warningln("WashTurnovers: ", d.WashTurnovers)
+	log.Warning("WashTurnovers: ", d.WashTurnovers)
 
 	d.RinseTime = c.RinseTime
-	log.Warningln("RinseTime: ", d.RinseTime)
+	log.Warning("RinseTime: ", d.RinseTime)
 
 	d.RinseTurnovers = c.RinseTurnovers
-	log.Warningln("RinseTurnovers: ", d.RinseTurnovers)
+	log.Warning("RinseTurnovers: ", d.RinseTurnovers)
 
 	d.SpinTime = c.SpinTime
-	log.Warningln("SpinTime: ", d.SpinTime)
+	log.Warning("SpinTime: ", d.SpinTime)
 
 	d.SpinTurnovers = c.SpinTurnovers
-	log.Warningln("SpinTurnovers: ", d.SpinTurnovers)
+	log.Warning("SpinTurnovers: ", d.SpinTurnovers)
 }
 
 func (washer *DevWasherConfig) RequestWasherConfig(conn net.Conn, args []string) models.WasherConfig {
@@ -93,13 +78,16 @@ func (washer *DevWasherConfig) RequestWasherConfig(conn net.Conn, args []string)
 	err := json.NewEncoder(conn).Encode(request)
 	error.CheckError("askConfig(): Encode JSON", err)
 
+	log.Warn("Request:", request)
+
 	response = models.WasherConfig{
+		Temperature: 30,
 		WashTime: 10,
-		WashTurnovers: 3,
+		WashTurnovers: 400,
 		RinseTime: 10,
-		RinseTurnovers: 3,
+		RinseTurnovers: 500,
 		SpinTime: 10,
-		SpinTurnovers: 3,
+		SpinTurnovers: 600,
 	}
 	//err = json.NewDecoder(conn).Decode(&response)
 	//error.CheckError("askConfig(): Decode JSON", err)
@@ -114,18 +102,20 @@ func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, 
 		panic("No center found!")
 	}
 	ticker := time.NewTicker(time.Second)
+
 	requestCounter := 0
 	for {
 		select {
 		case <- ticker.C:
-			switch washer.RequestWasherConfig(conn, args).IsEmpty() {
+			response := washer.RequestWasherConfig(conn, args)
+			log.Println("Response:", response)
+			switch response.IsEmpty() {
 			case true:
 				go washer.RequestWasherConfig(conn, args)
 				requestCounter++
 				log.Println("Request", requestCounter, "was successfully sent")
 			default:
-				log.Println("Washer Config: ", washer.RequestWasherConfig(conn, args))
-				washer.updateWasherConfig(washer.RequestWasherConfig(conn, args))
+				washer.updateWasherConfig(response)
 				ticker.Stop()
 				return
 			}

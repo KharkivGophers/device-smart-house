@@ -8,7 +8,7 @@ func NewWasherConfig() *DevWasherConfig {
 	return conf
 }
 
-func (d *DevWasherConfig) GetTemperature() float32 {
+func (d *DevWasherConfig) GetTemperature() int64 {
 	d.Mutex.Lock()
 	defer d.Mutex.Unlock()
 	return d.Temperature
