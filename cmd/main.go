@@ -35,11 +35,28 @@ func main() {
 			if r := recover(); r != nil {
 			}
 		}()
-		washerConfig.SendWasherRequests(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
+		nextStep := make(chan struct{})
+		firstStep := make(chan struct{})
 
-		go washer.RunDataGenerator(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, control)
+		go washerConfig.SendWasherRequests(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice,nextStep)
+		<-nextStep
+		go washer.RunDataGenerator(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, control, firstStep)
 		go washer.RunDataCollector(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, collectWasherData.RequestStorage)
+
 		go washer.DataTransfer(washerConfig, collectWasherData.RequestStorage, control)
+
+		go func() {
+			for{
+				select {
+				case <-firstStep:
+					log.Print("first Step ------------------------------------------------------------------")
+					go washerConfig.SendWasherRequests(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice,nextStep)
+					<-nextStep
+					go washer.RunDataGenerator(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, control, firstStep)
+					go washer.RunDataCollector(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, collectWasherData.RequestStorage)
+				}
+			}
+		}()
 
 	default:
 		fridgeConfig := fridgeconfig.NewFridgeConfig()
@@ -54,7 +71,7 @@ func main() {
 			if r := recover(); r != nil {
 			}
 		}()
-		fridgeConfig.RequestFridgeConfig(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
+		go fridgeConfig.RequestFridgeConfig(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
 
 		go fridge.RunDataGenerator(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, control)
 		go fridge.RunDataCollector(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, collectFridgeData.ReqChan, control)

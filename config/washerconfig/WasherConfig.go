@@ -92,7 +92,8 @@ func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string,
 	return response
 }
 
-func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, port string, c *models.Control, args []string) {
+func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, port string, c *models.Control, args []string, nextStep chan struct{}) {
+
 	ticker := time.NewTicker(time.Second)
 	response := washer.RequestWasherConfig(connType, host, port, args)
 	log.Println("Response:", response)
@@ -110,6 +111,7 @@ func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, 
 			default:
 				washer.updateWasherConfig(response)
 				ticker.Stop()
+				nextStep<-struct{}{}
 				return
 			}
 		}
