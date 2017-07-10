@@ -12,4 +12,4 @@ RUN \
     
 USER daemon
 ENTRYPOINT ["./device-smart-house"]
-CMD ["fridge", "LG", " FF:FF:FF:FF:FF:FF"]
+CMD ["fridge", "LG", "FF:FF:FF:FF:FF:FF"]
