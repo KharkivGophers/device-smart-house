@@ -23,6 +23,9 @@ func main() {
 		startWasher(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
 	case "fridge":
 		startFridge(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
+	default:
+		log.Error("Unknown Device!")
+		control.Close()
 	}
 
 	control.Wait()

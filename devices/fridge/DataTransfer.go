@@ -18,6 +18,12 @@ func DataTransfer(config *fridgeconfig.DevFridgeConfig, reqChan chan models.Frid
 		ConnTypeOut: "tcp",
 	}
 
+	defer func() {
+		if a := recover(); a != nil {
+			log.Error(a)
+			c.Close()
+		}
+	} ()
 	conn := connectionupdate.GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
 
 	for {

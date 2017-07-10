@@ -5,7 +5,6 @@ import (
 	"github.com/KharkivGophers/device-smart-house/error"
 	"github.com/KharkivGophers/device-smart-house/config/washerconfig"
 	log "github.com/Sirupsen/logrus"
-	"os"
 	"net"
 	"time"
 	"encoding/json"
@@ -13,14 +12,6 @@ import (
 )
 
 // Connection
-func GetEnvCenter(key string) string {
-	host := os.Getenv(key)
-	if len(host) == 0 {
-		return "127.0.0.1"
-	}
-	return host
-}
-
 func GetDial(connType string, host string, port string) net.Conn {
 	var times int
 	conn, err := net.Dial(connType, host+":"+port)
@@ -50,11 +41,10 @@ func Send(r models.WasherRequest, conn net.Conn) {
 	error.CheckError("send(): JSON Encode: ", err)
 
 	err = json.NewDecoder(conn).Decode(&resp)
-
-	error.CheckError("send(): JSON Decode: ", err)
 	if err != nil {
 		panic("No response found")
 	}
+	error.CheckError("send(): JSON Decode: ", err)
 
 	log.Infoln("Data was sent; Response from center: ", resp)
 }
@@ -70,6 +60,12 @@ func DataTransfer(config *washerconfig.DevWasherConfig, requestStorage chan mode
 		ConnTypeOut: "tcp",
 	}
 
+	defer func() {
+		if a := recover(); a != nil {
+			log.Error(a)
+			c.Close()
+		}
+	} ()
 	conn := GetDial(transferConnParams.ConnTypeOut, transferConnParams.HostOut, transferConnParams.PortOut)
 
 	for {

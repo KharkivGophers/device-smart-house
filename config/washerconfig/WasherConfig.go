@@ -69,12 +69,21 @@ func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string,
 	err = json.NewDecoder(conn).Decode(&response)
 	error.CheckError("askConfig(): Decode JSON", err)
 
+	if err != nil {
+		panic("Connection has been close by central server!")
+	}
+
 	return response
 }
 
 func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, port string, c *models.Control, args []string, nextStep chan struct{}) {
 
 	ticker := time.NewTicker(time.Second)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error(r)
+		}
+	} ()
 	response := washer.RequestWasherConfig(connType, host, port, args)
 	log.Println("Response:", response)
 
@@ -84,6 +93,12 @@ func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, 
 			switch response.IsEmpty() {
 			case true:
 				log.Println("Response:", response)
+				defer func() {
+					if r := recover(); r != nil {
+						log.Error(r)
+						c.Close()
+					}
+				} ()
 				washer.RequestWasherConfig(connType, host, port, args)
 			default:
 				washer.updateWasherConfig(response)
