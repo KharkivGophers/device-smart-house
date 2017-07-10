@@ -5,7 +5,7 @@ import (
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/config/washerconfig"
 	"os"
-	"log"
+	log "github.com/Sirupsen/logrus"
 )
 
 //DataCollector gathers data from DataGenerator
@@ -23,7 +23,7 @@ func DataCollector(ticker *time.Ticker, turnOversStorage <-chan models.GenerateW
 		case bv := <-turnOversStorage:
 			requestturnOversStorage[bv.Time] = bv.Turnovers
 		case <-ticker.C:
-			log.Print("Data Collector is working")
+			log.Warn("Data Collector is working")
 			RequestStorage <-constructReq(requestturnOversStorage, requestwaterTempStorage)
 
 			requestwaterTempStorage = make(map[int64]float32)

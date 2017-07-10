@@ -54,6 +54,5 @@ func Send(r models.FridgeRequest, conn net.Conn) {
 		panic("No response found")
 	}
 
-	log.Infoln("Request:")
-	log.Infoln("send(): Response from center: ", resp)
+	log.Infoln("Data was sent; Response from center: ", resp)
 }

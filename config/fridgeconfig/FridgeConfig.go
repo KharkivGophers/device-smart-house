@@ -86,9 +86,10 @@ func (fridge *DevFridgeConfig) RequestFridgeConfig(connType string, host string,
 			Name: args[1],
 			MAC:  args[2]},
 	}
-
 	err = json.NewEncoder(conn).Encode(request)
 	error.CheckError("askConfig(): Encode JSON", err)
+
+	log.Println("Request:", request)
 
 	err = json.NewDecoder(conn).Decode(&response)
 	error.CheckError("askConfig(): Decode JSON", err)

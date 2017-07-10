@@ -3,7 +3,7 @@ package washer
 import (
 	"github.com/KharkivGophers/device-smart-house/config/washerconfig"
 	"github.com/KharkivGophers/device-smart-house/models"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"math/rand"
 	"time"
 )
@@ -12,7 +12,7 @@ import (
 func DataGenerator(stage string, ticker *time.Ticker, maxTemperature int64, minTurnovers int64, maxTurnovers int64, turnOversStorage chan<- models.GenerateWasherData,
 	waterTempStorage chan<- models.GenerateWasherData) {
 
-	log.Println(stage, "started!")
+	log.Info(stage, " started!")
 	for {
 		select {
 		case <-ticker.C:
@@ -36,7 +36,7 @@ func RunDataGenerator(config *washerconfig.DevWasherConfig, turnOversStorage cha
 	go DataGenerator(stageWash, ticker, int64(maxTemperature), int64(minWashTurnovers), maxWashTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Println(stageWash, "finished!")
+	log.Info(stageWash, " finished!")
 
 	// Run rinse
 	rinseTime := config.GetRinseTime()
@@ -48,7 +48,7 @@ func RunDataGenerator(config *washerconfig.DevWasherConfig, turnOversStorage cha
 	go DataGenerator(stageRinse, ticker, int64(maxTemperature), int64(minRinseTurnovers), maxRinseTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Println(stageRinse, "finished!")
+	log.Info(stageRinse, " finished!")
 
 	// Run spin
 	spinTime := config.GetSpinTime()
@@ -60,7 +60,7 @@ func RunDataGenerator(config *washerconfig.DevWasherConfig, turnOversStorage cha
 	go DataGenerator(stageSpin, ticker, int64(maxTemperature), int64(minSpinTurnovers), maxSpinTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Println(stageSpin, "finished!")
+	log.Info(stageSpin, " finished!")
 
 	firstStep <- struct{}{}
 }

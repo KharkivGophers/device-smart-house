@@ -22,24 +22,6 @@ type DevWasherConfig struct {
 	subsPool       map[string]chan struct{}
 }
 
-func (d *DevWasherConfig) AddSubIntoPool(key string, value chan struct{}) {
-	d.Mutex.Lock()
-	d.subsPool[key] = value
-	d.Mutex.Unlock()
-}
-
-func (d *DevWasherConfig) RemoveSubFromPool(key string) {
-	d.Mutex.Lock()
-	delete(d.subsPool, key)
-	d.Mutex.Unlock()
-}
-
-func publishWasherConfig(d *DevWasherConfig) {
-	for _, v := range d.subsPool {
-		v <- struct{}{}
-	}
-}
-
 func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
 	d.Temperature = c.Temperature
 	log.Warning("Temperature: ", d.Temperature)
@@ -97,15 +79,12 @@ func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, 
 	ticker := time.NewTicker(time.Second)
 	response := washer.RequestWasherConfig(connType, host, port, args)
 	log.Println("Response:", response)
-	timer := time.NewTimer(time.Second * time.Duration(response.SpinTime + response.WashTime + response.RinseTime))
 
 	for {
 		select {
 		case <-ticker.C:
 			switch response.IsEmpty() {
 			case true:
-				<-timer.C
-				ticker = time.NewTicker(time.Second)
 				log.Println("Response:", response)
 				washer.RequestWasherConfig(connType, host, port, args)
 			default:
@@ -117,3 +96,21 @@ func (washer *DevWasherConfig) SendWasherRequests(connType string, host string, 
 		}
 	}
 }
+
+//func (d *DevWasherConfig) AddSubIntoPool(key string, value chan struct{}) {
+//	d.Mutex.Lock()
+//	d.subsPool[key] = value
+//	d.Mutex.Unlock()
+//}
+//
+//func (d *DevWasherConfig) RemoveSubFromPool(key string) {
+//	d.Mutex.Lock()
+//	delete(d.subsPool, key)
+//	d.Mutex.Unlock()
+//}
+//
+//func publishWasherConfig(d *DevWasherConfig) {
+//	for _, v := range d.subsPool {
+//		v <- struct{}{}
+//	}
+//}
