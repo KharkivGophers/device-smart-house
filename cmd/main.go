@@ -71,7 +71,7 @@ func main() {
 			if r := recover(); r != nil {
 			}
 		}()
-		fridgeConfig.RequestFridgeConfig(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
+		go fridgeConfig.RequestFridgeConfig(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
 
 		go fridge.RunDataGenerator(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, control)
 		go fridge.RunDataCollector(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, collectFridgeData.ReqChan, control)
