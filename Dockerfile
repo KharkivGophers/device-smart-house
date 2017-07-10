@@ -1,4 +1,4 @@
-FROM golang
+FROM alpine
 MAINTAINER Kharkiv Gophers (kostyamol@gmail.com)
 
 RUN mkdir -p /home/device-smart-house/bin
