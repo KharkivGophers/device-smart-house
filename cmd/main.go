@@ -2,10 +2,6 @@ package main
 
 import (
 	"github.com/KharkivGophers/device-smart-house/config"
-	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
-	"github.com/KharkivGophers/device-smart-house/config/washerconfig"
-	"github.com/KharkivGophers/device-smart-house/devices/fridge"
-	"github.com/KharkivGophers/device-smart-house/devices/washer"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 	log "github.com/Sirupsen/logrus"
@@ -24,53 +20,9 @@ func main() {
 
 	switch newDeviceType {
 	case "washer":
-		washerConfig := washerconfig.NewWasherConfig()
-
-		collectWasherData := models.CollectWasherData{
-			TurnoversStorage:   make(chan models.GenerateWasherData, 100),
-			TemperatureStorage: make(chan models.GenerateWasherData, 100),
-			RequestStorage:     make(chan models.WasherRequest),
-		}
-		defer func() {
-			if r := recover(); r != nil {
-			}
-		}()
-		nextStep := make(chan struct{})
-		firstStep := make(chan struct{})
-
-		go washer.DataTransfer(washerConfig, collectWasherData.RequestStorage, control)
-
-		go func() {
-			for{
-				select {
-				case <-firstStep:
-					go washerConfig.SendWasherRequests(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice,nextStep)
-					<-nextStep
-					go washer.RunDataGenerator(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, control, firstStep)
-					go washer.RunDataCollector(washerConfig, collectWasherData.TurnoversStorage, collectWasherData.TemperatureStorage, collectWasherData.RequestStorage)
-				}
-			}
-		}()
-		firstStep<- struct{}{}
-
-	default:
-		fridgeConfig := fridgeconfig.NewFridgeConfig()
-
-		collectFridgeData := models.CollectFridgeData{
-			CTop:    make(chan models.FridgeGenerData, 100), // First Camera
-			CBot:    make(chan models.FridgeGenerData, 100), // Second Camera
-			ReqChan: make(chan models.FridgeRequest),
-		}
-
-		defer func() {
-			if r := recover(); r != nil {
-			}
-		}()
-		fridgeConfig.RequestFridgeConfig(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
-
-		go fridge.RunDataGenerator(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, control)
-		go fridge.RunDataCollector(fridgeConfig, collectFridgeData.CBot, collectFridgeData.CTop, collectFridgeData.ReqChan, control)
-		go fridge.DataTransfer(fridgeConfig, collectFridgeData.ReqChan, control)
+		startWasher(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
+	case "fridge":
+		startFridge(configConnParams.ConnTypeConf, configConnParams.HostConf, configConnParams.PortConf, control, newDevice)
 	}
 
 	control.Wait()

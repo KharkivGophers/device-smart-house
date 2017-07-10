@@ -9,10 +9,10 @@ import (
 )
 
 // DataGenerator generates pseudo-random numbers
-func DataGenerator(stage string, ticker *time.Ticker, maxTemperature int64, minTurnovers int64, maxTurnovers int64, turnOversStorage chan<- models.GenerateWasherData,
+func DataGenerator(stage string, ticker *time.Ticker, maxTemperature int64, maxTurnovers int64, turnOversStorage chan<- models.GenerateWasherData,
 	waterTempStorage chan<- models.GenerateWasherData) {
 
-	log.Info(stage, " started!")
+	log.Info(stage, " -------- S T A R T E D!")
 	for {
 		select {
 		case <-ticker.C:
@@ -26,41 +26,40 @@ func RunDataGenerator(config *washerconfig.DevWasherConfig, turnOversStorage cha
 	waterTempStorage chan<- models.GenerateWasherData, c *models.Control, firstStep chan struct{}) {
 
 	maxTemperature := config.GetTemperature()
+
 	// Run wash
 	washTime := config.GetWashTime()
 	maxWashTurnovers := config.GetWashTurnovers()
-	minWashTurnovers := 200
-	stageWash := "Wash"
+	stageWash := "W A S H"
 	ticker := time.NewTicker(time.Second * 3)
 	timer := time.NewTimer(time.Second * time.Duration(washTime))
-	go DataGenerator(stageWash, ticker, int64(maxTemperature), int64(minWashTurnovers), maxWashTurnovers, turnOversStorage, waterTempStorage)
+	go DataGenerator(stageWash, ticker, int64(maxTemperature), maxWashTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Info(stageWash, " finished!")
+	log.Info(stageWash, " -------- F I N I S H E D!")
 
 	// Run rinse
 	rinseTime := config.GetRinseTime()
 	maxRinseTurnovers := config.GetRinseTurnovers()
-	minRinseTurnovers := maxRinseTurnovers - 100
-	stageRinse := "Rinse"
+	stageRinse := "R I N S E"
 	ticker = time.NewTicker(time.Second * 3)
 	timer = time.NewTimer(time.Second * time.Duration(rinseTime))
-	go DataGenerator(stageRinse, ticker, int64(maxTemperature), int64(minRinseTurnovers), maxRinseTurnovers, turnOversStorage, waterTempStorage)
+	go DataGenerator(stageRinse, ticker, int64(maxTemperature), maxRinseTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Info(stageRinse, " finished!")
+	log.Info(stageRinse, " -------- F I N I S H E D!")
 
 	// Run spin
 	spinTime := config.GetSpinTime()
 	maxSpinTurnovers := config.GetSpinTurnovers()
-	minSpinTurnovers := maxSpinTurnovers - 100
-	stageSpin := "Spin"
+	stageSpin := "S P I N"
 	ticker = time.NewTicker(time.Second * 3)
 	timer = time.NewTimer(time.Second * time.Duration(spinTime))
-	go DataGenerator(stageSpin, ticker, int64(maxTemperature), int64(minSpinTurnovers), maxSpinTurnovers, turnOversStorage, waterTempStorage)
+	go DataGenerator(stageSpin, ticker, int64(maxTemperature), maxSpinTurnovers, turnOversStorage, waterTempStorage)
 	<-timer.C
 	ticker.Stop()
-	log.Info(stageSpin, " finished!")
+	log.Info(stageSpin, " -------- F I N I S H E D!")
+	log.Warn("W A S H I N G --- M A C H I N E --- F I N I S H E D")
 
 	firstStep <- struct{}{}
 }

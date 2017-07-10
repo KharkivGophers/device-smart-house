@@ -24,25 +24,23 @@ type DevWasherConfig struct {
 
 func (d *DevWasherConfig) updateWasherConfig(c models.WasherConfig) {
 	d.Temperature = c.Temperature
-	log.Warning("Temperature: ", d.Temperature)
 
 	d.WashTime = c.WashTime
-	log.Warning("WashTime: ", d.WashTime)
 
 	d.WashTurnovers = c.WashTurnovers
-	log.Warning("WashTurnovers: ", d.WashTurnovers)
 
 	d.RinseTime = c.RinseTime
-	log.Warning("RinseTime: ", d.RinseTime)
 
 	d.RinseTurnovers = c.RinseTurnovers
-	log.Warning("RinseTurnovers: ", d.RinseTurnovers)
 
 	d.SpinTime = c.SpinTime
-	log.Warning("SpinTime: ", d.SpinTime)
 
 	d.SpinTurnovers = c.SpinTurnovers
-	log.Warning("SpinTurnovers: ", d.SpinTurnovers)
+
+	log.Warn("New Configuration:")
+	log.Warn("Temperature: ", d.Temperature, "; WashTime: ", d.WashTime, "; WashTurnovers: ", d.WashTurnovers,
+		"; RinseTime: ", d.RinseTime, "; RinseTurnovers: ", d.RinseTurnovers, "; SpinTime: ", d.SpinTime,
+		"; SpinTurnovers: ", d.SpinTurnovers)
 }
 
 func (washer *DevWasherConfig) RequestWasherConfig(connType string, host string, port string, args []string) models.WasherConfig {

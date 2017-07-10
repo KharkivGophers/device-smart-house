@@ -56,8 +56,7 @@ func Send(r models.WasherRequest, conn net.Conn) {
 		panic("No response found")
 	}
 
-	log.Infoln("Request:")
-	log.Infoln("send(): Response from center: ", resp)
+	log.Infoln("Data was sent; Response from center: ", resp)
 }
 
 //DataTransfer func sends request as JSON to the centre
