@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 	"github.com/KharkivGophers/device-smart-house/models"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/goconvey/convey"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -14,10 +14,10 @@ func TestAddSubIntoPool(t *testing.T) {
 	ch := make(chan struct{})
 	key := "19-29"
 
-	Convey("AddSubIntoPool should add chan into the pool", t, func() {
+	convey.Convey("AddSubIntoPool should add chan into the pool", t, func() {
 		testConfig := NewFridgeConfig()
 		testConfig.AddSubIntoPool(key, ch)
-		So(testConfig.subsPool[key], ShouldEqual, ch)
+		convey.So(testConfig.subsPool[key], convey.ShouldEqual, ch)
 	})
 }
 
@@ -25,12 +25,12 @@ func TestRemoveSubFromPool(t *testing.T) {
 	ch := make(chan struct{})
 	key := "19-29"
 
-	Convey("RemoveSubFromPool should remove chan from the pool", t, func() {
+	convey.Convey("RemoveSubFromPool should remove chan from the pool", t, func() {
 		testConfig := NewFridgeConfig()
 		testConfig.AddSubIntoPool(key, ch)
 
 		testConfig.RemoveSubFromPool(key)
-		So(testConfig.subsPool[key], ShouldEqual, nil)
+		convey.So(testConfig.subsPool[key], convey.ShouldEqual, nil)
 	})
 }
 
@@ -42,12 +42,12 @@ func TestUpdateConfig(t *testing.T) {
 		SendFreq:    100,
 		CollectFreq: 50}
 
-	Convey("UpdateConfig should update struct by new struct's values", t, func() {
+	convey.Convey("UpdateConfig should update struct by new struct's values", t, func() {
 		testConfig := NewFridgeConfig()
 		testConfig.updateConfig(exCfg)
-		So(testConfig.GetTurned(), ShouldEqual, exCfg.TurnedOn)
-		So(testConfig.GetCollectFreq(), ShouldEqual, exCfg.CollectFreq)
-		So(testConfig.GetSendFreq(), ShouldEqual, exCfg.SendFreq)
+		convey.So(testConfig.GetTurned(), convey.ShouldEqual, exCfg.TurnedOn)
+		convey.So(testConfig.GetCollectFreq(), convey.ShouldEqual, exCfg.CollectFreq)
+		convey.So(testConfig.GetSendFreq(), convey.ShouldEqual, exCfg.SendFreq)
 	})
 }
 
@@ -64,7 +64,7 @@ func TestListenConfig(t *testing.T) {
 	hostConf := "localhost"
 	portConf := "3000"
 
-	Convey("ListenConfig should receive a configuration", t, func() {
+	convey.Convey("ListenConfig should receive a configuration", t, func() {
 
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
 		go func() {
@@ -92,9 +92,9 @@ func TestListenConfig(t *testing.T) {
 		}()
 		listenConfig(testConfig, client)
 
-		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
-		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
-		So(testConfig.GetTurned(), ShouldEqual, true)
+		convey.So(testConfig.GetSendFreq(), convey.ShouldEqual, 5000)
+		convey.So(testConfig.GetCollectFreq(), convey.ShouldEqual, 1000)
+		convey.So(testConfig.GetTurned(), convey.ShouldEqual, true)
 	})
 }
 
@@ -109,7 +109,7 @@ func TestInit(t *testing.T) {
 	hostConf := "localhost"
 	portConf := "3000"
 
-	Convey("Init should receive config", t, func() {
+	convey.Convey("Init should receive config", t, func() {
 		control := &models.Control{make(chan struct{})}
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
 		go func() {
@@ -131,9 +131,9 @@ func TestInit(t *testing.T) {
 			}} ()
 		testConfig.RequestFridgeConfig(connTypeConf, hostConf, portConf, control, maskOsArgs())
 
-		So(testConfig.GetSendFreq(), ShouldEqual, 5000)
-		So(testConfig.GetCollectFreq(), ShouldEqual, 1000)
-		So(testConfig.GetTurned(), ShouldEqual, true)
+		convey.So(testConfig.GetSendFreq(), convey.ShouldEqual, 5000)
+		convey.So(testConfig.GetCollectFreq(), convey.ShouldEqual, 1000)
+		convey.So(testConfig.GetTurned(), convey.ShouldEqual, true)
 	})
 }
 

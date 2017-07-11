@@ -8,7 +8,7 @@ import (
 	"os"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"net"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/goconvey/convey"
 	log "github.com/Sirupsen/logrus"
 	"github.com/KharkivGophers/device-smart-house/config/fridgeconfig"
 )
@@ -46,7 +46,7 @@ func TestDataTransfer(t *testing.T) {
 	testConfig := fridgeconfig.NewFridgeConfig()
 	ch := make(chan models.FridgeRequest)
 
-	Convey("DataTransfer should receive req from chan and transfer it to the server", t, func() {
+	convey.Convey("DataTransfer should receive req from chan and transfer it to the server", t, func() {
 		ln, err := net.Listen(connTypeOut, hostOut+":"+portOut)
 		if err != nil {
 			//t.Fail()
@@ -77,11 +77,11 @@ func TestDataTransfer(t *testing.T) {
 
 		time.Sleep(time.Millisecond * 10)
 		b := reflect.DeepEqual(req.Data, exReq.Data)
-		So(req.Action, ShouldEqual, exReq.Action)
+		convey.So(req.Action, convey.ShouldEqual, exReq.Action)
 		//Compare struct
-		So(b, ShouldEqual, true)
-		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
-		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
-		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
+		convey.So(b, convey.ShouldEqual, true)
+		convey.So(req.Meta.MAC, convey.ShouldEqual, exReq.Meta.MAC)
+		convey.So(req.Meta.Name, convey.ShouldEqual, exReq.Meta.Name)
+		convey.So(req.Meta.Type, convey.ShouldEqual, exReq.Meta.Type)
 	})
 }

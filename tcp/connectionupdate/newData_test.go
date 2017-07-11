@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 	"time"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/goconvey/convey"
 	"os"
 	"encoding/json"
 	"github.com/KharkivGophers/device-smart-house/models"
@@ -16,13 +16,13 @@ func TestGetDial(t *testing.T) {
 	hostConf := "0.0.0.0"
 	portConf := "3000"
 
-	Convey("tcp tcp should be established", t, func() {
+	convey.Convey("tcp tcp should be established", t, func() {
 		ln, _ := net.Listen(connTypeConf, hostConf+":"+portConf)
 		conn := GetDial(connTypeConf, hostConf, portConf)
 		time.Sleep(time.Millisecond * 100)
 		defer ln.Close()
 		defer conn.Close()
-		So(conn, ShouldNotBeNil)
+		convey.So(conn, convey.ShouldNotBeNil)
 	})
 }
 
@@ -44,7 +44,7 @@ func TestSend(t *testing.T) {
 	}
 
 	resp = models.Response{Descr: "Struct has been received"}
-	Convey("Send should send JSON to the server", t, func() {
+	convey.Convey("Send should send JSON to the server", t, func() {
 		defer func() {
 			if r := recover(); r != nil {
 				log.Error(r)
@@ -55,9 +55,9 @@ func TestSend(t *testing.T) {
 		json.NewDecoder(server).Decode(&req)
 		json.NewEncoder(server).Encode(resp)
 
-		So(req.Action, ShouldEqual, exReq.Action)
-		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
-		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
-		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
+		convey.So(req.Action, convey.ShouldEqual, exReq.Action)
+		convey.So(req.Meta.MAC, convey.ShouldEqual, exReq.Meta.MAC)
+		convey.So(req.Meta.Name, convey.ShouldEqual, exReq.Meta.Name)
+		convey.So(req.Meta.Type, convey.ShouldEqual, exReq.Meta.Type)
 	})
 }

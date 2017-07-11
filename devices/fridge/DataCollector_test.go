@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"github.com/KharkivGophers/device-smart-house/models"
 	"testing"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/smartystreets/goconvey/convey"
 )
 
 func TestDataCollector(t *testing.T) {
@@ -36,7 +36,7 @@ func TestDataCollector(t *testing.T) {
 			TempCam2: botMap},
 	}
 
-	Convey("DataGenerator should produce structs with data", t, func() {
+	convey.Convey("DataGenerator should produce structs with data", t, func() {
 
 		go DataCollector(ticker, bot, top, reqChan, stopInner)
 		top <- models.FridgeGenerData{Data: 1.01}
@@ -48,7 +48,7 @@ func TestDataCollector(t *testing.T) {
 
 		//Compare struct's data
 		b := reflect.DeepEqual(req.Data, exReq.Data)
-		So(b, ShouldEqual, true)
+		convey.So(b, convey.ShouldEqual, true)
 	})
 }
 
@@ -74,15 +74,15 @@ func TestConstructReq(t *testing.T) {
 			MAC:  os.Args[3]},
 		Data: models.FridgeData{TempCam1: top, TempCam2: bot},
 	}
-	Convey("ConstructReq should produce Request struct with received data", t, func() {
+	convey.Convey("ConstructReq should produce Request struct with received data", t, func() {
 		req := constructReq(top, bot)
 		b := reflect.DeepEqual(req.Data, exReq.Data)
-		So(req.Action, ShouldEqual, exReq.Action)
+		convey.So(req.Action, convey.ShouldEqual, exReq.Action)
 		//Compare struct
-		So(b, ShouldEqual, true)
-		So(req.Meta.MAC, ShouldEqual, exReq.Meta.MAC)
-		So(req.Meta.Name, ShouldEqual, exReq.Meta.Name)
-		So(req.Meta.Type, ShouldEqual, exReq.Meta.Type)
+		convey.So(b, convey.ShouldEqual, true)
+		convey.So(req.Meta.MAC, convey.ShouldEqual, exReq.Meta.MAC)
+		convey.So(req.Meta.Name, convey.ShouldEqual, exReq.Meta.Name)
+		convey.So(req.Meta.Type, convey.ShouldEqual, exReq.Meta.Type)
 	})
 }
 
