@@ -8,9 +8,10 @@ import (
 )
 
 func main() {
+
 	configConnParams := models.ConfigConnParams{
 		ConnTypeConf: "tcp",
-		HostConf:     connectionupdate.GetEnvCenter("CENTER_PORT_3000_TCP_ADDR"),
+		HostConf:     connectionupdate.GetEnvCenter("CENTER_TCP_ADDR"),
 		PortConf:     "3000",
 	}
 

@@ -9,6 +9,7 @@ import (
 	"time"
 	"encoding/json"
 
+	"github.com/KharkivGophers/device-smart-house/tcp/connectionupdate"
 )
 
 // Connection
@@ -54,8 +55,7 @@ func DataTransfer(config *washerconfig.DevWasherConfig, requestStorage chan mode
 
 	// for data transfer
 	transferConnParams := models.TransferConnParams{
-		// HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),
-		HostOut: "0.0.0.0",
+		HostOut: connectionupdate.GetEnvCenter("CENTER_TCP_ADDR"),
 		PortOut: "3030",
 		ConnTypeOut: "tcp",
 	}
