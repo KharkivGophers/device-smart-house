@@ -71,20 +71,17 @@ func TestListenConfig(t *testing.T) {
 			defer ln.Close()
 			server, err := ln.Accept()
 			if err != nil {
-				//t.Fail()
-				panic("ListenConfig() Accept: No Connection")
+				t.Fail()
 			}
 			err = json.NewEncoder(server).Encode(cfg)
 			if err != nil {
-				//t.Fail()
-				panic("ListenConfig() Encode: invalid data to encode!")
+				t.Fail()
 			}
 		}()
 
 		client, err := net.Dial("tcp", ln.Addr().String())
 		if err != nil {
-			//t.Fail()
-			panic("ListenConfig() Dial: invalid address!")
+			t.Fail()
 		}
 		testConfig := NewFridgeConfig()
 
@@ -119,13 +116,11 @@ func TestInit(t *testing.T) {
 			defer ln.Close()
 			server, err := ln.Accept()
 			if err != nil {
-				//t.Fail()
-				panic("Init() Accept: invalid connection!")
+				t.Fail()
 			}
 			err = json.NewEncoder(server).Encode(devCfg)
 			if err != nil {
-				//t.Fail()
-				panic("Init() Encode: invalid data to encode!")
+				t.Fail()
 			}
 		}()
 		testConfig := NewFridgeConfig()

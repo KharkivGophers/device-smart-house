@@ -58,13 +58,11 @@ func TestDataTransfer(t *testing.T) {
 			defer ln.Close()
 			server, err := ln.Accept()
 			if err != nil {
-				//t.Fail()
-				panic("DataTransfer() Accept: invalid connection")
+				t.Fail()
 			}
 			err = json.NewDecoder(server).Decode(&req)
 			if err != nil {
-				//t.Fail()
-				panic("DataTransfer() Decode: invalid data to decode")
+				t.Fail()
 			}
 		}()
 
