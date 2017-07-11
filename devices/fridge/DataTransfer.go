@@ -12,8 +12,7 @@ func DataTransfer(config *fridgeconfig.DevFridgeConfig, reqChan chan models.Frid
 
 	// for data transfer
 	transferConnParams := models.TransferConnParams{
-		// HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),
-		HostOut: "0.0.0.0",
+		HostOut: GetEnvCenter("CENTER_PORT_3030_TCP_ADDR"),		
 		PortOut: "3030",
 		ConnTypeOut: "tcp",
 	}
